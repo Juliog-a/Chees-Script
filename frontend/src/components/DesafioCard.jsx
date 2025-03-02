@@ -1,0 +1,63 @@
+import { useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+
+const DesafioCard = ({ desafio }) => {
+    const [liked, setLiked] = useState(desafio.liked_by_user);
+
+    const toggleLike = async () => {
+        const token = localStorage.getItem("accessToken");
+
+        try {
+            const response = await axios.post(`http://127.0.0.1:8000/api/desafios/${desafio.id}/toggle_like/`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setLiked(response.data.liked);
+        } catch (error) {
+            console.error("Error al cambiar el estado de Me gusta:", error);
+        }
+    };
+
+    return (
+        <div className="w-[500px] min-h-[320px] p-6 rounded-lg shadow-md flex flex-col justify-between bg-yellow-100 border-l-8 relative">
+            <div className="flex justify-between items-start">
+                <button onClick={toggleLike} className="text-2xl">
+                    {liked ? "❤️" : "🤍"}
+                </button>
+                <span className="text-2xl font-bold text-center flex-grow">{desafio.nombre}</span>
+                <span
+    className={`text-white text-sm px-4 py-1 rounded-md font-bold ${
+        desafio.solucionado ? "bg-gray-500" : "bg-green-600"
+    } flex items-center whitespace-nowrap`}
+>
+    {desafio.puntuacion} ptos
+</span>
+
+            </div>
+
+            {/* Descripción */}
+            <p className="text-md text-gray-700 mt-4">{desafio.descripcion}</p>
+
+            {/* Botones */}
+            <div className="mt-4 flex justify-between gap-2">
+                <Link to={`/teoria/${desafio.id}`} className="bg-black text-yellow-400 px-4 py-2 rounded w-full flex items-center justify-center">
+                    📖 Teoría
+                </Link>
+                <Link to={`/pistas/${desafio.id}`} className="bg-black text-yellow-400 px-4 py-2 rounded w-full flex items-center justify-center">
+                    💡 Pistas
+                </Link>
+                <Link to={`/feedback/${desafio.id}`} className="bg-black text-yellow-400 px-4 py-2 rounded w-full flex items-center justify-center">
+                    📝 Feedback
+                </Link>
+            </div>
+            <div className="mt-4 flex justify-center">
+                <Link to={`/desafio/${desafio.id}`} className="bg-yellow-400 text-black px-6 py-3 text-lg font-bold rounded w-3/4 flex items-center justify-center">
+                    ¡Vamos!
+                </Link>
+            </div>
+        </div>
+    );
+};
+
+export default DesafioCard;

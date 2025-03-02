@@ -1,0 +1,33 @@
+import { Link } from "react-router-dom";
+
+export default function Contacto() {
+  return (
+    <div className="w-screen min-h-screen flex flex-col bg-white text-black">
+      {/* Contenido Principal */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="w-full max-w-[700px] text-center">
+          {/* Título */}
+          <h1 className="text-3xl md:text-5xl font-bold">¿Necesitas ayuda?</h1>
+
+          {/* Información de contacto */}
+          <div className="mt-6 text-lg md:text-xl space-y-3">
+            <p>📞 Teléfono: (+34) 055 65 12 43</p>
+            <p>📧 Correo de contacto: <span className="font-semibold">cheesscript@gmail.com</span></p>
+            <p>📘 Facebook: <span className="font-semibold">CheeseandoelScript</span></p>
+            <p>📸 Instagram: <span className="font-semibold">CheeseandoelScript</span></p>
+          </div>
+
+          {/* Botón de formulario de contacto */}
+          <div className="mt-8">
+            <Link
+              to="/formulario-contacto"
+              className="bg-black text-yellow-400 px-6 py-3 text-lg font-bold rounded-md hover:bg-gray-800 transition"
+            >
+              Formulario de contacto
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

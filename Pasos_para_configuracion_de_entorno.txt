@@ -1,0 +1,25 @@
+Abrir el proyecto en VSCode
+
+Abrir terminal con Cntrol+ñ
+
+Dividir el terminal en dos, uno para el backend y otro para el frontend:
+	cd backend
+
+	cd frontend
+
+Configuramos ambos:
+	backend:
+		Creamos el entorno virtual: python -m venv venv
+
+		Activamos el entorno virtual: .\venv\Scripts\Activate
+
+		Instalamos los requerimientos: pip install -r requirements.txt
+
+
+	frontend: npm install
+
+
+Iniciamos cada uno:
+	backend: python manage.py runserver
+	
+	frontend: npm run dev
