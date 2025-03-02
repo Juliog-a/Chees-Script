@@ -23,3 +23,11 @@ Iniciamos cada uno:
 	backend: python manage.py runserver
 	
 	frontend: npm run dev
+
+
+
+Para subir a GitHub la primera vez:
+	git init
+	git add .
+	git commit -m "mensaje"
+	git push --set-upstream https://github.com/Juliog-a/Chees-Script.git master
