@@ -68,7 +68,9 @@ const PistasPage = () => {
                             recursos.map(recurso => (
                                 <div key={recurso.id} className="mb-6">
                                     <h2 className="text-xl font-semibold text-gray-900">{recurso.nombre}</h2>
-                                    <p className="text-gray-800 mt-4">{recurso.contenido}</p>
+                                    <p className="text-gray-800 mt-4" style={{ whiteSpace: "pre-wrap" }}>
+                                        {recurso.contenido}
+                                    </p>
                                 </div>
                             ))
                         ) : (
