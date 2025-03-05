@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../utils/AuthContext";
-import logo from "../assets/logo_cheescript1.png";
+import logo from "../assets/logo_cheescript.png";
 
 const Navbar = () => {
     const { isAuthenticated, logout } = useContext(AuthContext);

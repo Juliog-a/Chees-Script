@@ -67,7 +67,7 @@ class ComentarioPublicacionSerializer(serializers.ModelSerializer):
         fields = ["id", "contenido", "fecha_publicacion", "autor", "usuario", "publicacion_id"]
 
     def validate_contenido(self, value):
-        """ Evita que los comentarios sean mayores a 120 caracteres """
+        """ Evita que los comentarios sean mayores a 100 caracteres """
         if len(value) > 100:
             raise serializers.ValidationError("El comentario no puede superar los 100 caracteres.")
         return value

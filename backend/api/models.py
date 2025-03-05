@@ -61,7 +61,40 @@ class Desafio(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.tematica} - {self.nivel_dificultad})"
+  
+class RecursosDidacticos(models.Model):
+    TIPOS_CHOICES = [
+        ('teoria', 'Teoría'),
+        ('pista', 'Pista'),
+    ]
 
+    desafio = models.ForeignKey('Desafio', on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=10, choices=TIPOS_CHOICES, default='teoria')
+    nombre = models.CharField(max_length=100, default="Recurso sin nombre")
+    url_contenido = models.CharField(max_length=256, blank=True) 
+    fecha_publicacion = models.DateTimeField(auto_now_add=True)
+    contenido = models.TextField(blank=True, null=True) 
+
+    def save(self, *args, **kwargs):
+        """
+        Generar automáticamente la URL del recurso basado en su tipo y el ID del desafío.
+        """
+        base_url = "http://localhost:5173" 
+        slug = slugify(self.nombre) 
+
+        # Crear la URL automática basada en el tipo y el ID del desafío
+        self.url_contenido = f"{base_url}/{self.tipo}/{self.desafio.id}/{slug}"
+        
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.desafio.nombre} - {self.tipo} - {self.nombre}"
+
+    def delete_selected(self, request, queryset):
+        queryset.delete()
+        self.message_user(request, "Recursos seleccionados eliminados correctamente.")
+    
+    delete_selected.short_description = "Eliminar los recursos seleccionados"
 
 class UsuarioDesafio(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -119,7 +152,7 @@ class FormularioFeedback(models.Model):
         return f"Feedback de {self.autor} en {self.desafio.nombre}"
 
 
-class Snippet(models.Model):
+class Snippet(models.Model):#NO SE USA
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=64)
     titulo = models.CharField(max_length=128)
@@ -140,40 +173,7 @@ class FormularioContacto(models.Model):
     def __str__(self):
         return f"Mensaje de {self.autor}"
 
-    
-class RecursosDidacticos(models.Model):
-    TIPOS_CHOICES = [
-        ('teoria', 'Teoría'),
-        ('pista', 'Pista'),
-    ]
-
-    desafio = models.ForeignKey('Desafio', on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=10, choices=TIPOS_CHOICES, default='teoria')
-    nombre = models.CharField(max_length=100, default="Recurso sin nombre")
-    url_contenido = models.CharField(max_length=256, blank=True) 
-    fecha_publicacion = models.DateTimeField(auto_now_add=True)
-    contenido = models.TextField(blank=True, null=True) 
-
-    def save(self, *args, **kwargs):
-        """
-        Generar automáticamente la URL del recurso basado en su tipo y el ID del desafío.
-        """
-        base_url = "http://localhost:5173" 
-        slug = slugify(self.nombre) 
-
-        # Crear la URL automática basada en el tipo y el ID del desafío
-        self.url_contenido = f"{base_url}/{self.tipo}/{self.desafio.id}/{slug}"
-        
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.desafio.nombre} - {self.tipo} - {self.nombre}"
-
-    def delete_selected(self, request, queryset):
-        queryset.delete()
-        self.message_user(request, "Recursos seleccionados eliminados correctamente.")
-    
-    delete_selected.short_description = "Eliminar los recursos seleccionados"
+  
 
 
 

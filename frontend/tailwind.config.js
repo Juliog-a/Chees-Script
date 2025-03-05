@@ -4,7 +4,7 @@ export default {
     "./index.html",
     "./base.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "../backend/templates/**/*.html" // Asegura que Tailwind escanea los archivos Django
+    "../backend/templates/**/*.html"        // Asegura que Tailwind escanea los archivos Django
   ],
   theme: {
     extend: {},

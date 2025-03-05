@@ -348,18 +348,7 @@ class ComentarioPublicacionViewSet(viewsets.ModelViewSet):
 
 
 
-
-
-
-
-
-
-
 #VIEWS RELACIONADOS CON EL CONTACTO AL USUARIO:
-
-
-
-
 
 class FormularioContactoViewSet(viewsets.ModelViewSet):
     queryset = FormularioContacto.objects.all()
@@ -379,9 +368,6 @@ class FormularioContactoViewSet(viewsets.ModelViewSet):
             print("Errores de validación:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-
-
-
 
 
 

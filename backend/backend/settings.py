@@ -60,7 +60,7 @@ TEMPLATES = [
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),  # Token de acceso dura 1 hora
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Token de refresco dura 7 días
-    "ROTATE_REFRESH_TOKENS": True,  # Se renueva el token de refresco automáticamente
+    "ROTATE_REFRESH_TOKENS": True,                # Se renueva el token de refresco automáticamente
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
