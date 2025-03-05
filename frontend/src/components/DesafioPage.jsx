@@ -43,8 +43,16 @@ const DesafioPage = () => {
             }
         } catch (error) {
             console.error("Error al verificar respuesta:", error);
+    
+            // Si el error tiene una respuesta del servidor, capturar el mensaje
+            if (error.response) {
+                setMensaje(error.response.data.mensaje || "Hubo un error al verificar la respuesta.");
+            } else {
+                setMensaje("Error de conexión con el servidor.");
+            }
         }
     };
+    
     
 
     return (
