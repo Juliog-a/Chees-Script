@@ -8,10 +8,10 @@ const TwoFactorAuth = () => {
     const token = localStorage.getItem("accessToken");
 
     useEffect(() => {
-        check2FAStatus(); // Verificar si el usuario ya tiene 2FA activado al cargar la página
+        check2FAStatus(); // Consultar estado 2FA desde la API
     }, []);
 
-    // Verifica el estado de 2FA del usuario
+    // Verificar si el usuario tiene 2FA activado en la base de datos
     const check2FAStatus = async () => {
         try {
             const response = await fetch("http://127.0.0.1:8000/api/user/", {
@@ -24,9 +24,7 @@ const TwoFactorAuth = () => {
 
             const data = await response.json();
             if (response.ok) {
-                setIs2FAEnabled(data.is2fa_enabled); // Verificar si 2FA está activado
-            } else {
-                console.error("Error al verificar estado 2FA:", data);
+                setIs2FAEnabled(data.is2fa_enabled); // 🔹 Persistencia: Guardar estado real desde la BBDD
             }
         } catch (error) {
             console.error("Error al consultar estado 2FA:", error.message);
@@ -35,7 +33,7 @@ const TwoFactorAuth = () => {
         }
     };
 
-    // Activar 2FA y obtener QR
+    // Activar 2FA y obtener código QR
     const handleEnable2FA = async () => {
         try {
             const response = await fetch("http://127.0.0.1:8000/api/enable-2fa/", {
@@ -44,7 +42,6 @@ const TwoFactorAuth = () => {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                credentials: "include",
             });
 
             if (!response.ok) {
@@ -60,7 +57,7 @@ const TwoFactorAuth = () => {
         }
     };
 
-    // Verificar OTP
+    // Verificar OTP y activar 2FA en la base de datos
     const handleVerify2FA = async () => {
         if (!otp.trim()) {
             alert("Debes ingresar un código OTP antes de verificar.");
@@ -81,7 +78,8 @@ const TwoFactorAuth = () => {
 
             if (response.ok) {
                 alert("2FA activado correctamente.");
-                setIs2FAEnabled(true); // Marcar 2FA como activado
+                setIs2FAEnabled(true); // 🔹 Persistente: actualizamos el estado
+                setQrCode(null); // Ocultamos el QR tras la activación
             } else {
                 alert(`Código incorrecto: ${data.error}`);
             }
@@ -92,29 +90,46 @@ const TwoFactorAuth = () => {
         }
     };
 
-    // Desactivar 2FA
+    // Desactivar 2FA en la base de datos
     const handleDisable2FA = async () => {
+        const otp_code = prompt("Introduce el código 2FA para desactivarlo:");
+    
+        if (!otp_code) {
+            alert("Debes ingresar un código OTP.");
+            return;
+        }
+    
+        const token = localStorage.getItem("accessToken");
+    
+        if (!token) {
+            alert("No tienes una sesión activa. Por favor, inicia sesión.");
+            return;
+        }
+    
         try {
             const response = await fetch("http://127.0.0.1:8000/api/disable-2fa/", {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`, // 🔹 Enviar token correctamente
                     "Content-Type": "application/json",
                 },
+                body: JSON.stringify({ otp_code }), // 🔹 Enviar el código OTP
             });
-
+    
             const data = await response.json();
             if (response.ok) {
-                alert("2FA desactivado correctamente");
-                setIs2FAEnabled(false); // Marcar 2FA como desactivado
+                alert("✅ 2FA desactivado correctamente.");
+                setIs2FAEnabled(false); // 🔹 Ocultar el botón después de desactivar 2FA
             } else {
-                console.error("Error al desactivar 2FA:", data);
+                alert(`❌ Error: ${data.error}`);
             }
         } catch (error) {
-            console.error("Error al desactivar 2FA:", error.message);
+            console.error("❌ Error al desactivar 2FA:", error.message);
+            alert("❌ Ocurrió un error al intentar desactivar 2FA.");
         }
     };
-
+    
+    
     return (
         <div className="text-center bg-yellow-200 p-4 rounded-md">
             <h3 className="text-lg font-semibold mb-2">Autenticación en Dos Factores (2FA)</h3>

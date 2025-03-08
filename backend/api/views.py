@@ -530,10 +530,6 @@ class RegisterView(APIView):
         }, status=status.HTTP_201_CREATED)
     
 
-
-
-
-
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -558,6 +554,9 @@ class ChangePasswordView(APIView):
             "message": "Contraseña cambiada con éxito.",
             "access_token": new_access_token
         }, status=status.HTTP_200_OK)
+
+
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -703,22 +702,39 @@ def confirm_2fa(request):
 
 
 # Función para desactivar 2FA
-@authentication_classes([JWTAuthentication, SessionAuthentication])
-@permission_classes([IsAuthenticated])
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])  # Usa autenticación JWT
+@permission_classes([IsAuthenticated])  # Asegura que el usuario esté autenticado
 def disable_2fa(request):
-    """Desactiva el 2FA del usuario."""
+    """Desactiva el 2FA, pero primero verifica un código OTP."""
     try:
-        user = request.user
+        # Verificar si el usuario está autenticado correctamente
+        if not request.user or request.user.is_anonymous:
+            return Response({"error": "Usuario no autenticado. Inicia sesión de nuevo."}, status=401)
 
-        # Verificar si el usuario realmente tiene 2FA activado
-        if not user.profile.is2fa_enabled:
-            return JsonResponse({"error": "No tienes 2FA activado."}, status=400)
+        # Verificar si el usuario tiene perfil y 2FA activado
+        if not hasattr(request.user, "profile") or not request.user.profile.is2fa_enabled:
+            return Response({"error": "No tienes 2FA activado."}, status=400)
 
-        user.profile.otp_secret = ""
-        user.profile.is2fa_enabled = False
-        user.profile.save()  # Guardar en `Profile`
+        # Obtener el código OTP del cuerpo de la petición
+        data = json.loads(request.body)
+        otp_code = data.get("otp_code")
 
-        return JsonResponse({"status": "success"})
+        if not otp_code:
+            return Response({"error": "Debes ingresar un código OTP para desactivar 2FA."}, status=400)
+
+        # Verificar el código OTP
+        totp = pyotp.TOTP(request.user.profile.otp_secret)
+
+        if not totp.verify(otp_code):
+            return Response({"error": "Código OTP incorrecto."}, status=400)
+
+        # Si el código es correcto, desactivar el 2FA
+        request.user.profile.otp_secret = ""
+        request.user.profile.is2fa_enabled = False
+        request.user.profile.save()
+
+        return Response({"status": "success", "message": "2FA desactivado correctamente."}, status=200)
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        return Response({"error": str(e)}, status=500)

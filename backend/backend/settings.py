@@ -13,7 +13,7 @@ load_dotenv()
 # Django settings for backend project
 SECRET_KEY = 'django-insecure-_(eqh@hntr#0g5_3!xyvip%)ac^ue&9xc79-wzd4eg$c#_shmz'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 TAILWIND_APP_NAME = 'theme'
 
@@ -160,6 +160,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Adjust to your frontend URL
     "http://127.0.0.1:5173",
 ]
+
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
 
 CORS_ALLOW_METHODS = [
     "GET",

@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken"));
     const [refreshToken, setRefreshToken] = useState(localStorage.getItem("refreshToken"));
 
-    // Función para verificar y refrescar el token de acceso
+    // Función para refrescar el token de acceso
     const refreshAccessToken = async () => {
         if (!refreshToken) {
             console.log("No hay refreshToken disponible.");
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Función para verificar si el token sigue siendo válido
+    // Función para verificar si el token sigue siendo válido y si el usuario tiene perfil
     const checkTokenValidity = async () => {
         const token = localStorage.getItem("accessToken");
 
@@ -44,13 +44,20 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            await axios.get("http://127.0.0.1:8000/api/user/", {
+            const response = await axios.get("http://127.0.0.1:8000/api/user/", {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            // Si el usuario tiene perfil y está autenticado, actualizar estado
+            if (response.status === 200) {
+                setIsAuthenticated(true);
+            }
         } catch (error) {
             if (error.response?.status === 401) {
                 console.warn("Token expirado. Cerrando sesión.");
                 logout();
+            } else {
+                console.error("Error verificando token:", error);
             }
         }
     };
@@ -66,11 +73,11 @@ export const AuthProvider = ({ children }) => {
         setRefreshToken(refresh);
 
         if (token) {
-            // Configurar temporizador para refrescar el token cada 55 minutos
-            const refreshInterval = setInterval(refreshAccessToken, 55 * 60 * 1000); // 55 minutos en ms
+            // Refrescar token cada 55 minutos
+            const refreshInterval = setInterval(refreshAccessToken, 55 * 60 * 1000);
 
-            // Configurar verificación del token cada 10 segundos
-            const checkInterval = setInterval(checkTokenValidity, 10000); // Cada 10s verificar si sigue autenticado
+            // Verificar token cada 30 segundos para evitar llamadas excesivas
+            const checkInterval = setInterval(checkTokenValidity, 30000);
 
             return () => {
                 clearInterval(refreshInterval);
@@ -93,8 +100,6 @@ export const AuthProvider = ({ children }) => {
         setRefreshToken(refresh);
         setIsAuthenticated(true);
     };
-    
-    
 
     // Función de cierre de sesión
     const logout = () => {
@@ -104,7 +109,6 @@ export const AuthProvider = ({ children }) => {
         setAccessToken(null);
         setRefreshToken(null);
         setIsAuthenticated(false);
-        window.location.reload(); //Recargar la página para actualizar la UI inmediatamente
     };
 
     return (
