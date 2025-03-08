@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AccountDeleted from "../components/AccountDeleted.jsx";
+import TwoFactorAuth from "../components/TwoFactorAuth";
 
 const Perfil = () => {
     const navigate = useNavigate();
@@ -9,6 +10,7 @@ const Perfil = () => {
         username: "",
         profileImage: "",
         favoriteChallenges: "",
+        
     });
 
     const [originalUser, setOriginalUser] = useState({});
@@ -16,6 +18,8 @@ const Perfil = () => {
     const [success, setSuccess] = useState("");
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [errorPassword, setErrorPassword] = useState("");
+
+    const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
     // Estados para el cambio de contraseña
     const [oldPassword, setOldPassword] = useState("");
@@ -33,32 +37,46 @@ const Perfil = () => {
             return;
         }
         fetchUserData(token);
-    }, [navigate]);
+    }, []);  // <= dependencias vacías para ejecutar solo una vez al montar
+    
+    
+    
 
     const fetchUserData = async (token) => {
         try {
             const response = await axios.get("http://127.0.0.1:8000/api/user/", {
                 headers: { Authorization: `Bearer ${token}` },
             });
-
+    
             setUser({
                 username: response.data.username,
                 profileImage: response.data.profile_image || "",
                 favoriteChallenges: response.data.favoriteChallenges || "",
             });
-
+    
             setOriginalUser({
                 username: response.data.username,
                 profileImage: response.data.profile_image || "",
                 favoriteChallenges: response.data.favoriteChallenges || "",
             });
-
+    
+            setIs2FAEnabled(response.data.is2fa_enabled);
             setLoading(false);
         } catch (err) {
             setLoading(false);
             navigate("/login");
         }
     };
+    
+    if (loading) {
+        return (
+            <div className="w-screen min-h-screen flex items-center justify-center bg-white text-black">
+                <p className="text-xl font-bold">Cargando...</p>
+            </div>
+        );
+    }
+    
+    
 
     const validatePassword = (password) => {
         const minLength = password.length >= 8;
@@ -116,6 +134,7 @@ const Perfil = () => {
             setErrorPassword(err.response?.data?.error || "Error al cambiar la contraseña.");
         }
     };
+
 
     const handleSave = async () => {
         try {
@@ -199,6 +218,8 @@ const Perfil = () => {
                     
                 </div>
 
+                <TwoFactorAuth />
+
                 {success && <p className="text-green-500 mt-4">{success}</p>}
 
                 <div className="flex justify-center gap-4 mt-6">
@@ -229,7 +250,6 @@ const Perfil = () => {
         }}
     />
 )}
-
 
 
 

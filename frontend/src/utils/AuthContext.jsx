@@ -80,7 +80,12 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // Función de inicio de sesión
-    const login = (token, refresh) => {
+    const login = (token, refresh, is2FA = false) => {
+        if (is2FA) {
+            console.log("2FA habilitado. Esperando verificación antes de guardar el token.");
+            return;
+        }
+    
         console.log("Usuario autenticado. Guardando tokens...");
         localStorage.setItem("accessToken", token);
         localStorage.setItem("refreshToken", refresh);
@@ -88,6 +93,8 @@ export const AuthProvider = ({ children }) => {
         setRefreshToken(refresh);
         setIsAuthenticated(true);
     };
+    
+    
 
     // Función de cierre de sesión
     const logout = () => {

@@ -16,6 +16,26 @@ from rest_framework.decorators import api_view, permission_classes
 import logging
 from rest_framework.throttling import UserRateThrottle
 from django.db.models import F
+import pyotp
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
+from django.views import View
+import pyotp
+import json
+from django.contrib.auth import authenticate
+from django.http import JsonResponse
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+from django.core.cache import cache
+
 
 
 
@@ -538,3 +558,167 @@ class ChangePasswordView(APIView):
             "message": "Contraseña cambiada con éxito.",
             "access_token": new_access_token
         }, status=status.HTTP_200_OK)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TwoFactorAuthView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            username = data.get("username")
+            password = data.get("password")
+
+            user = authenticate(username=username, password=password)
+
+            if user:
+                if hasattr(user, 'profile') and user.profile.is2fa_enabled:
+                    temp_token = RefreshToken.for_user(user).access_token
+                    return JsonResponse({
+                        "2fa_required": True,
+                        "temp_token": str(temp_token),
+                        "username": user.username
+                    }, status=200)
+
+                refresh = RefreshToken.for_user(user)
+                return JsonResponse({
+                    "2fa_required": False,
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh)
+                }, status=200)
+
+            return JsonResponse({"error": "Credenciales incorrectas"}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+
+
+
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class Verify2FAView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            temp_token = data.get("temp_token")
+            otp_code = data.get("otp_code")
+            username = data.get("username")
+
+            if not otp_code or not temp_token or not username:
+                return JsonResponse({"error": "Faltan datos."}, status=400)
+
+            user = User.objects.get(username=username)
+
+            attempts_key = f"2fa_attempts_{username}"
+            attempts = cache.get(attempts_key, 0)
+
+            if attempts >= 3:
+                return JsonResponse({"error": "Has alcanzado el límite de intentos. Inténtalo de nuevo más tarde."}, status=403)
+
+            totp = pyotp.TOTP(user.profile.otp_secret)
+
+            if totp.verify(otp_code):
+                cache.delete(attempts_key)
+                refresh = RefreshToken.for_user(user)
+                return JsonResponse({
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                }, status=200)
+            else:
+                attempts += 1
+                cache.set(attempts_key, attempts, timeout=60) #espera de un min cuando fallas 3 veces en el codigo de verificacion
+                return JsonResponse({"error": f"Código incorrecto. Intento {attempts}/3"}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+
+# Función para generar el código QR al activar 2FA
+
+@authentication_classes([JWTAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def enable_2fa(request):
+    """Genera un código QR para activar 2FA en la cuenta del usuario."""
+    try:
+        # ✅ Autenticación manual con JWTAuthentication
+        user, _ = JWTAuthentication().authenticate(request)
+
+        if user is None:
+            return JsonResponse({"error": "Token inválido o usuario no autenticado"}, status=401)
+
+        if not hasattr(user, "profile"):
+            return JsonResponse({"error": "El usuario no tiene un perfil."}, status=500)
+
+        if not user.profile.otp_secret:
+            user.profile.otp_secret = pyotp.random_base32()
+            user.profile.save()
+
+        totp = pyotp.TOTP(user.profile.otp_secret)
+        otp_uri = totp.provisioning_uri(name=user.email, issuer_name="Cheese Script")
+
+        return JsonResponse({"qr_code": otp_uri})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+# Función para confirmar el código OTP e indicar que 2FA está activado
+
+@csrf_exempt  # 🔹 Desactiva CSRF para pruebas
+@api_view(["POST"])  # 🔹 Define el método POST permitido
+@authentication_classes([JWTAuthentication])  # 🔹 Usa JWT para autenticación
+@permission_classes([IsAuthenticated])  # 🔹 Asegura que el usuario está autenticado
+def confirm_2fa(request):
+    """Verifica el código OTP ingresado por el usuario después del login."""
+    try:
+        print(f"🔹 Usuario autenticado en Django: {request.user}")  # 🔍 Log para ver qué usuario se está autenticando
+        print(f"🔹 ¿Está autenticado?: {request.user.is_authenticated}")  
+
+        if not request.user.is_authenticated:  # ✅ Si Django no reconoce el usuario, devuelve error
+            return JsonResponse({"error": "Usuario no autenticado"}, status=401)
+
+        data = json.loads(request.body)
+        otp_code = data.get("otp_code")
+        user = request.user
+
+        if not hasattr(user, "profile"):  # ✅ Verifica si el usuario tiene perfil
+            return JsonResponse({"error": "El usuario no tiene un perfil asociado."}, status=400)
+
+        if not otp_code:
+            return JsonResponse({"error": "Se requiere un código OTP."}, status=400)
+
+        totp = pyotp.TOTP(user.profile.otp_secret)
+
+        if totp.verify(otp_code):
+            user.profile.is2fa_enabled = True
+            user.profile.save()
+            return JsonResponse({"success": "✅ Código correcto. 2FA activado."}, status=200)
+
+        return JsonResponse({"error": "Código incorrecto."}, status=400)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+# Función para desactivar 2FA
+@authentication_classes([JWTAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def disable_2fa(request):
+    """Desactiva el 2FA del usuario."""
+    try:
+        user = request.user
+
+        # Verificar si el usuario realmente tiene 2FA activado
+        if not user.profile.is2fa_enabled:
+            return JsonResponse({"error": "No tienes 2FA activado."}, status=400)
+
+        user.profile.otp_secret = ""
+        user.profile.is2fa_enabled = False
+        user.profile.save()  # Guardar en `Profile`
+
+        return JsonResponse({"status": "success"})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
