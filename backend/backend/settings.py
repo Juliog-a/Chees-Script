@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
 # Django settings for backend project
-SECRET_KEY = 'django-insecure-_(eqh@hntr#0g5_3!xyvip%)ac^ue&9xc79-wzd4eg$c#_shmz'
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-key-for-dev')
 DEBUG = True
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
@@ -97,6 +97,53 @@ INSTALLED_APPS = [
 ]
 
 
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 5256000  # 2 meses en producción
+else:
+    SECURE_SSL_REDIRECT = False
+    SECURE_HSTS_SECONDS = 0  # No activarlo en desarrollo
+
+
+
+
+
+# CSP (Content Security Policy) -> Para mitigar ataques XSS.
+# CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
+CSP_DEFAULT_SRC = ("'self'",)  # Solo permite recursos del mismo dominio
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'") if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")
+# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
+
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")  
+# Tailwind usa estilos inline, por eso permitimos 'unsafe-inline'
+
+CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")  
+# Para cargar fuentes desde Google Fonts
+
+CSP_IMG_SRC = ("'self'", "data:", "blob:")  
+# Permitir imágenes en base64 y blobs
+
+CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "ws://localhost:8000")
+
+# Permite llamadas a APIs externas (ajusta según tu backend)
+
+CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  
+# Para permitir iframes de videos embebidos
+
+CSP_OBJECT_SRC = ("'none'",)  
+# Bloquea Flash y otros objetos inseguros
+
+CSP_FORM_ACTION = ("'self'",)  
+# Evita envíos de formularios a dominios externos
+
+CSP_WORKER_SRC = ("'self'", "blob:")  
+# Permite Web Workers y Service Workers (importante para PWA)
+
+CSP_MANIFEST_SRC = ("'self'",)  
+# Permite cargar manifest.json en React PWA
+
+
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -107,6 +154,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_otp.middleware.OTPMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 # URLs configuration
@@ -117,13 +165,14 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cheesescript',
-        'USER': 'julio',
-        'PASSWORD': '36510756',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME', 'cheesescript'),
+        'USER': os.getenv('DB_USER', 'julio'),
+        'PASSWORD': os.getenv('DB_PASSWORD', '36510756'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
+
 
 # Password validation configuration
 AUTH_PASSWORD_VALIDATORS = [
@@ -174,3 +223,19 @@ CORS_ALLOW_METHODS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Seguridad de Cookies en Django
+SESSION_COOKIE_SECURE = not DEBUG  # Solo permite cookies en HTTPS (poner en producción)
+SESSION_COOKIE_HTTPONLY = True  # Evita que las cookies sean accesibles por JavaScript
+SESSION_COOKIE_SAMESITE = 'Lax'  # Evita envío de cookies en peticiones de otros sitios
+CSRF_COOKIE_SECURE = not DEBUG  # Protege la cookie de CSRF en HTTPS
+CSRF_COOKIE_HTTPONLY = True  # No accesible por JavaScript
+CSRF_COOKIE_SAMESITE = 'Lax'  # Protege contra ataques CSRF
+
+
+SECURE_BROWSER_XSS_FILTER = True  # Protección contra XSS en navegadores
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Previene ataques de MIME sniffing
+X_FRAME_OPTIONS = 'DENY'  # Evita que la página se cargue en iframes (Clickjacking)
+
+
+SECURE_REFERRER_POLICY = "same-origin"  # Evita que el navegador envíe referrers a sitios externos
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies reversos (NGINX)
