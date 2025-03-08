@@ -15,9 +15,10 @@ const Perfil = () => {
 
     const [originalUser, setOriginalUser] = useState({});
     const [loading, setLoading] = useState(true);
-    const [success, setSuccess] = useState("");
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [errorPassword, setErrorPassword] = useState("");
+    const [success, setSuccess] = useState("");
+
 
     const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
@@ -113,11 +114,37 @@ const Perfil = () => {
         try {
             const token = localStorage.getItem("accessToken");
     
-            const response = await axios.put(
-                "http://127.0.0.1:8000/api/change-password/",
-                { oldPassword, newPassword },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            try {
+                const token = localStorage.getItem("accessToken");
+            
+                // Verificar si el nuevo nombre de usuario ya está en uso
+                if (user.username !== originalUser.username) {
+                    const usernameExists = await axios.get(`http://127.0.0.1:8000/api/check-username/${user.username}/`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+            
+                    if (usernameExists.data.exists) {
+                        setErrorPassword("El nombre de usuario ya está en uso.");
+                        return;
+                    }
+                }
+            
+                await axios.put(
+                    "http://127.0.0.1:8000/api/user/update/",
+                    {
+                        profile_image: user.profileImage || undefined,
+                        username: user.username !== originalUser.username ? user.username : undefined,
+                        favoriteChallenges: user.favoriteChallenges !== originalUser.favoriteChallenges ? user.favoriteChallenges : undefined,
+                    },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            
+                setSuccess("Perfil actualizado correctamente.");
+                setOriginalUser({ ...user });
+            } catch (err) {
+                setErrorPassword("Error al actualizar el perfil.");
+            }
+            
     
             const newAccessToken = response.data.access_token;
             
@@ -135,11 +162,12 @@ const Perfil = () => {
         }
     };
 
-
     const handleSave = async () => {
         try {
             const token = localStorage.getItem("accessToken");
-            await axios.put(
+    
+            // Intentar actualizar el perfil
+            const response = await axios.put(
                 "http://127.0.0.1:8000/api/user/update/",
                 {
                     profile_image: user.profileImage || undefined,
@@ -148,13 +176,26 @@ const Perfil = () => {
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-
+    
+            // Si la respuesta es exitosa (200), mostrar mensaje de éxito
             setSuccess("Perfil actualizado correctamente.");
+            setErrorPassword("");  // Limpiar error si la actualización es exitosa
             setOriginalUser({ ...user });
+    
         } catch (err) {
-            setErrorPassword("Error al actualizar el perfil.");
+            // Captura el error si el backend devuelve un 400
+            if (err.response?.status === 400) {
+                setErrorPassword(err.response.data.error);  // Mostrar mensaje de error del backend
+                setSuccess("");  // Limpiar mensaje de éxito si hay error
+            } else {
+                setErrorPassword("Error al actualizar el perfil.");
+                setSuccess("");
+            }
         }
     };
+    
+    
+    
 
     const handleDeleteAccount = async () => {
         try {
@@ -221,6 +262,7 @@ const Perfil = () => {
                 <TwoFactorAuth />
 
                 {success && <p className="text-green-500 mt-4">{success}</p>}
+                {errorPassword && <p className="text-red-500 mt-4">{errorPassword}</p>}
 
                 <div className="flex justify-center gap-4 mt-6">
                     <button onClick={handleSave} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition">

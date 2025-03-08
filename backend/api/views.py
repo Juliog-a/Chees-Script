@@ -429,7 +429,6 @@ class UserDetailView(APIView):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
-
 class UserUpdateView(APIView):
     """Permite actualizar los datos del usuario."""
     permission_classes = [IsAuthenticated]
@@ -440,13 +439,20 @@ class UserUpdateView(APIView):
 
         print("Datos recibidos en Django:", data)  # Para Depuración
 
+        # Verificar si el username está en uso y excluir al usuario actual
         if "username" in data:
-            user.username = data["username"]
+            new_username = data["username"].strip()
 
+            if User.objects.filter(username=new_username).exclude(id=user.id).exists():
+                return Response({"error": "El nombre de usuario ya está en uso."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.username = new_username
+
+        # Verificar si el email se debe actualizar
         if "email" in data:
             user.email = data["email"]
 
-        # Verificar si hay cambio de contraseña
+        # Manejo de cambio de contraseña
         old_password = data.get("oldPassword", "").strip()
         new_password = data.get("newPassword", "").strip()
         confirm_password = data.get("confirmPassword", "").strip()
@@ -460,16 +466,13 @@ class UserUpdateView(APIView):
 
             user.set_password(new_password)
 
-        # Forzar guardado de `profile_image`
+        # Actualización de la imagen de perfil
         if "profile_image" in data:
-            print("Actualizando profile_image con:", data["profile_image"])  # Depuración
-
             if data["profile_image"].strip():
                 user.profile.profile_image = data["profile_image"]
                 user.profile.save(update_fields=['profile_image'])
-                print("Imagen guardada correctamente:", user.profile.profile_image)  # Verificar en consola
 
-        # Guardar cambios en el usuario y asegurarse de que se almacenen
+        # Guardar cambios en el usuario
         user.save()
 
         return Response({
@@ -641,7 +644,7 @@ class Verify2FAView(View):
 def enable_2fa(request):
     """Genera un código QR para activar 2FA en la cuenta del usuario."""
     try:
-        # ✅ Autenticación manual con JWTAuthentication
+        # Autenticación manual con JWTAuthentication
         user, _ = JWTAuthentication().authenticate(request)
 
         if user is None:
@@ -665,24 +668,24 @@ def enable_2fa(request):
 
 # Función para confirmar el código OTP e indicar que 2FA está activado
 
-@csrf_exempt  # 🔹 Desactiva CSRF para pruebas
-@api_view(["POST"])  # 🔹 Define el método POST permitido
-@authentication_classes([JWTAuthentication])  # 🔹 Usa JWT para autenticación
-@permission_classes([IsAuthenticated])  # 🔹 Asegura que el usuario está autenticado
+@csrf_exempt  # Desactiva CSRF para pruebas
+@api_view(["POST"])  # Define el método POST permitido
+@authentication_classes([JWTAuthentication])  # Usa JWT para autenticación
+@permission_classes([IsAuthenticated])  # Asegura que el usuario está autenticado
 def confirm_2fa(request):
     """Verifica el código OTP ingresado por el usuario después del login."""
     try:
-        print(f"🔹 Usuario autenticado en Django: {request.user}")  # 🔍 Log para ver qué usuario se está autenticando
-        print(f"🔹 ¿Está autenticado?: {request.user.is_authenticated}")  
+        print(f"Usuario autenticado en Django: {request.user}")  # Log para ver qué usuario se está autenticando
+        print(f"¿Está autenticado?: {request.user.is_authenticated}")  
 
-        if not request.user.is_authenticated:  # ✅ Si Django no reconoce el usuario, devuelve error
+        if not request.user.is_authenticated:  # Si Django no reconoce el usuario, devuelve error
             return JsonResponse({"error": "Usuario no autenticado"}, status=401)
 
         data = json.loads(request.body)
         otp_code = data.get("otp_code")
         user = request.user
 
-        if not hasattr(user, "profile"):  # ✅ Verifica si el usuario tiene perfil
+        if not hasattr(user, "profile"):  # Verifica si el usuario tiene perfil
             return JsonResponse({"error": "El usuario no tiene un perfil asociado."}, status=400)
 
         if not otp_code:
@@ -693,7 +696,7 @@ def confirm_2fa(request):
         if totp.verify(otp_code):
             user.profile.is2fa_enabled = True
             user.profile.save()
-            return JsonResponse({"success": "✅ Código correcto. 2FA activado."}, status=200)
+            return JsonResponse({"success": "Código correcto. 2FA activado."}, status=200)
 
         return JsonResponse({"error": "Código incorrecto."}, status=400)
 

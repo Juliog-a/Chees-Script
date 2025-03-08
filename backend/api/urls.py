@@ -37,20 +37,11 @@ urlpatterns = [
     path("usuario/", obtener_usuario, name="obtener_usuario"),
     path("desafios/<int:pk>/", DesafioViewSet.as_view({'get': 'retrieve'}), name="detalle-desafio"),
     path("2fa/", TwoFactorAuthView.as_view(), name="two_factor_auth"),
-
-    # URL para login (con y sin 2FA)
     path("login/", TwoFactorAuthView.as_view(), name="login"),
-
-    # URL para verificar OTP
     path("login/verify-otp/", Verify2FAView.as_view(), name="verify-otp"),
-
-    # Mantén estas URLs para el manejo de 2FA (activar/desactivar)
     path("enable-2fa/", enable_2fa, name="enable_2fa"),
     path("disable-2fa/", disable_2fa, name="disable_2fa"),
     path("verify-2fa/", Verify2FAView.as_view(), name="verify_2fa"),
     path("confirm-2fa/", confirm_2fa, name="confirm_2fa"),
-
-
-
 ]
 
