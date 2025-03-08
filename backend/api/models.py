@@ -114,9 +114,14 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     points = models.IntegerField(default=0)
     profile_image = models.URLField(max_length=500, blank=True, null=True)
+    
+    # Campos para 2FA
+    otp_secret = models.CharField(max_length=32, blank=True, null=True)  # Clave para 2FA
+    is2fa_enabled = models.BooleanField(default=False)  # Si el usuario tiene 2FA activo
 
     def __str__(self):
         return f"{self.user.username} - {self.points} puntos"
+
 
 class Publicacion(models.Model):
     titulo = models.CharField(max_length=128)

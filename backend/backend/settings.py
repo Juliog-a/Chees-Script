@@ -13,7 +13,7 @@ load_dotenv()
 # Django settings for backend project
 SECRET_KEY = 'django-insecure-_(eqh@hntr#0g5_3!xyvip%)ac^ue&9xc79-wzd4eg$c#_shmz'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 TAILWIND_APP_NAME = 'theme'
 
@@ -25,6 +25,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # Sesiones
+
     ),
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',  # Output in JSON
@@ -87,7 +89,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api',
-    'tailwind',  # Esta línea está bien, porque es la app de Django para usar Tailwind
+    'tailwind',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',
+    'two_factor',
 ]
 
 
@@ -100,6 +106,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 # URLs configuration
@@ -151,7 +158,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Adjust to your frontend URL
+    "http://127.0.0.1:5173",
 ]
+
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
 
 CORS_ALLOW_METHODS = [
     "GET",
@@ -163,3 +173,4 @@ CORS_ALLOW_METHODS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+

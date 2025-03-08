@@ -45,10 +45,12 @@ class DesafioSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     points = serializers.IntegerField(source='profile.points', read_only=True)
     profile_image = serializers.URLField(source='profile.profile_image', required=False)
+    is2fa_enabled = serializers.BooleanField(source="profile.is2fa_enabled", read_only=True)  # 🔹 Agregar el campo
+
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'points', 'profile_image']
+        fields = ['id', 'username', 'email', 'points', 'profile_image', 'is2fa_enabled']
         
     def get_points(self, obj):
         """Obtiene los puntos desde el perfil del usuario."""
