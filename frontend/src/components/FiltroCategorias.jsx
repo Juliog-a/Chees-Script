@@ -14,7 +14,7 @@ const FiltroCategorias = ({
     const categorias = [
         "Cifrado", "XSS", "Inyección SQL", "Ejecución de Código", 
         "Path Traversal", "Denegación de Servicio", "Manipulación de Estado del Cliente", 
-        "XSRF", "XSSI", "Vulnerabilidades de Configuración", "Ajax", "Todas"
+        "XSRF", "XSSI", "Vulnerabilidades de Configuración", "Ajax","Depuración ", "Todas"
     ];
 
     return (
