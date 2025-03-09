@@ -6,7 +6,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(('api.urls', 'api'), namespace='api')),
 
-    # Aquí referenciamos el archivo local, con la tupla (módulo, app_name) y el namespace
 # backend/urls.py
 
     path('api/password_reset/', auth_views.PasswordResetView.as_view(

@@ -76,7 +76,9 @@ const DesafioPage = () => {
                     {/* Sección de Enunciado */}
                     <div className="mt-8 p-6 bg-gray-200 border-l-4 border-gray-600 rounded-lg shadow-md">
                         <h2 className="text-2xl font-semibold">📜 Enunciado del Desafío</h2>
-                        <p className="text-gray-800 mt-3 text-lg">{desafio.enunciado}</p>
+                        <pre className="text-gray-800 mt-3 text-lg bg-gray-100 p-4 rounded-md overflow-x-auto whitespace-pre-wrap">
+                            {desafio.enunciado}
+                        </pre>
                     </div>
 
                     {/* Sección de Texto Cifrado (solo si aplica) */}
