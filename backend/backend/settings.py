@@ -18,7 +18,9 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 TAILWIND_APP_NAME = 'theme'
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "templates"),  # Archivos estáticos del frontend
+]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
 
 # REST Framework configuration
@@ -38,9 +40,12 @@ REST_FRAMEWORK = {
 
 # Authentication configuration
 AUTHENTICATION_BACKENDS = [
-    'api.backends.CustomUserAuthBackend',  # Enables login with email or username
-    'django.contrib.auth.backends.ModelBackend',
+    'api.backends.CustomUserAuthBackend',  # Habilita login con email o username
+    'django.contrib.auth.backends.ModelBackend',  # Necesario para Django Admin
 ]
+
+
+
 
 # Template configuration
 TEMPLATES = [
@@ -76,10 +81,8 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = f"CheeseScript <{EMAIL_HOST_USER}>"
 
-
-
 INSTALLED_APPS = [
-    'django.contrib.admin', 
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -93,9 +96,21 @@ INSTALLED_APPS = [
     'django_otp',
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_static',
-    'two_factor',
+    #'two_factor', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
 ]
 
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_otp.middleware.OTPMiddleware',
+    'csp.middleware.CSPMiddleware',
+]
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
@@ -103,10 +118,6 @@ if not DEBUG:
 else:
     SECURE_SSL_REDIRECT = False
     SECURE_HSTS_SECONDS = 0  # No activarlo en desarrollo
-
-
-
-
 
 # CSP (Content Security Policy) -> Para mitigar ataques XSS.
 # CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
@@ -144,19 +155,6 @@ CSP_MANIFEST_SRC = ("'self'",)
 
 
 
-MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_otp.middleware.OTPMiddleware',
-    'csp.middleware.CSPMiddleware',
-]
-
 # URLs configuration
 ROOT_URLCONF = 'backend.urls'
 WSGI_APPLICATION = 'backend.wsgi.application'
@@ -172,7 +170,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
-
 
 # Password validation configuration
 AUTH_PASSWORD_VALIDATORS = [
@@ -200,7 +197,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
-
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -208,9 +204,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Adjust to your frontend URL
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
 ]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000"]
 
 CORS_ALLOW_METHODS = [
     "GET",
@@ -231,11 +229,9 @@ CSRF_COOKIE_SECURE = not DEBUG  # Protege la cookie de CSRF en HTTPS
 CSRF_COOKIE_HTTPONLY = True  # No accesible por JavaScript
 CSRF_COOKIE_SAMESITE = 'Lax'  # Protege contra ataques CSRF
 
-
 SECURE_BROWSER_XSS_FILTER = True  # Protección contra XSS en navegadores
 SECURE_CONTENT_TYPE_NOSNIFF = True  # Previene ataques de MIME sniffing
 X_FRAME_OPTIONS = 'DENY'  # Evita que la página se cargue en iframes (Clickjacking)
-
 
 SECURE_REFERRER_POLICY = "same-origin"  # Evita que el navegador envíe referrers a sitios externos
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies reversos (NGINX)
