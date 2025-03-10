@@ -4,15 +4,45 @@ const AccountDeleted = ({ onConfirm }) => {
     const [confirmationText, setConfirmationText] = useState("");
     const [error, setError] = useState("");
 
-    const handleDelete = () => { // Maneja el borrado del usuario
+    const handleDelete = async () => {
         if (confirmationText === "CONFIRMO") {
-            localStorage.removeItem("accessToken"); // Borra el token de acceso
-            onConfirm(true);
-            window.location.reload(); // Recarga la página tras eliminación
+            try {
+                const token = localStorage.getItem("accessToken");
+    
+                if (!token) {
+                    setError("No estás autenticado.");
+                    return;
+                }
+    
+                console.log("Enviando solicitud DELETE al backend...");
+    
+                const response = await fetch("http://127.0.0.1:8000/api/user/delete/", {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+    
+                if (response.ok) {
+                    console.log("Cuenta eliminada correctamente");
+                    // Elimina los tokens antes de recargar la página
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("refreshToken"); // Asegura que el refresh token también se borre
+                    onConfirm(true);
+                    window.location.href = "/login"; // Redirige a login en lugar de recargar
+                } else {
+                    console.error("Error al eliminar cuenta:", await response.json());
+                    setError("Error al eliminar la cuenta.");
+                }
+            } catch (error) {
+                console.error("Error de conexión con el servidor:", error);
+                setError("Error de conexión con el servidor.");
+            }
         } else {
+            console.warn("Texto de confirmación incorrecto");
             setError("Debes escribir exactamente 'CONFIRMO' en mayúsculas para continuar.");
         }
     };
+    
+    
 
     return (
         <div className="fixed inset-0 flex items-start justify-center pt-60 bg-black bg-opacity-50 z-50">

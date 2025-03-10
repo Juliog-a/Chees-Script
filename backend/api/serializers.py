@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User, Desafio,UsuarioDesafio, Publicacion, ComentarioPublicacion, FormularioFeedback, Snippet, FormularioContacto, RecursosDidacticos
 import re
+import bleach
 
 class DesafioSerializer(serializers.ModelSerializer):
     liked_by_user = serializers.SerializerMethodField()
@@ -105,14 +106,24 @@ class PublicacionSerializer(serializers.ModelSerializer):
         """ Validar que el contenido no supere 200 caracteres """
         if len(value) > 200:
             raise serializers.ValidationError("El contenido no puede tener más de 200 caracteres.")
+
+        # Sanitiza la entrada con bleach para evitar XSS
+        value = bleach.clean(value)
         return value
 
     def validate_url_imagen(self, value):
         """ Valida que la URL sea una imagen válida """
+    def validate_url_imagen(self, value):
+        """ Valida que la URL sea segura y apunte a una imagen """
         if value:
             regex = r"^https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg)$"
             if not re.match(regex, value, re.IGNORECASE):
                 raise serializers.ValidationError("La URL debe ser una imagen válida (png, jpg, jpeg, gif, bmp, webp, svg).")
+
+            # Prevenir URLs sospechosas (evitar inyecciones)
+            if "javascript:" in value or "data:" in value:
+                raise serializers.ValidationError("URL inválida por razones de seguridad.")
+        
         return value
     
     def get_liked_by_user(self, obj):
@@ -137,7 +148,14 @@ class FormularioFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormularioFeedback
         fields = ["id", "autor", "codigo", "fecha_envio", "puntuacion", "desafio_id", "usuario_id"]
-
+    def validate_codigo(self, value):
+        """ Evita que se inyecten scripts maliciosos en el código enviado """
+        if "<script>" in value or "</script>" in value:
+            raise serializers.ValidationError("El código no puede contener scripts.")
+        
+        # Escapa caracteres peligrosos usando bleach
+        value = bleach.clean(value)
+        return value
 
 
 class FormularioContactoSerializer(serializers.ModelSerializer):

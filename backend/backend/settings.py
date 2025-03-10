@@ -79,7 +79,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = f"CheeseScript <{EMAIL_HOST_USER}>"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -97,6 +97,7 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_static',
     #'two_factor', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
+    'rest_framework_simplejwt.token_blacklist',  # <-- Asegúrate de que está activado
 ]
 
 MIDDLEWARE = [
@@ -134,7 +135,7 @@ CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")
 CSP_IMG_SRC = ("'self'", "data:", "blob:")  
 # Permitir imágenes en base64 y blobs
 
-CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "ws://localhost:8000")
+CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "ws://localhost:8000", "http://127.0.0.1:8000", "http://127.0.0.1:5173")
 
 # Permite llamadas a APIs externas (ajusta según tu backend)
 
@@ -207,7 +208,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True  # Solo para depuración, no en producción
 CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000"]
 
 CORS_ALLOW_METHODS = [

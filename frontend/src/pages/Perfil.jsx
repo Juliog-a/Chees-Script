@@ -53,8 +53,9 @@ const Perfil = () => {
                 username: response.data.username,
                 profileImage: response.data.profile_image || "",
                 favoriteChallenges: response.data.favoriteChallenges || "",
+                points: response.data.points || 0, // <-- Agregado
             });
-    
+            
             setOriginalUser({
                 username: response.data.username,
                 profileImage: response.data.profile_image || "",
@@ -77,6 +78,31 @@ const Perfil = () => {
         );
     }
     
+    
+    const calculateLevel = (points) => {
+        if (points >= 1000) return { level: 100, progress: 100 };
+        let level = 1;
+        let requiredPoints = 5;
+        let totalPoints = 0;
+    
+        while (totalPoints + requiredPoints <= points && level < 100) {
+            totalPoints += requiredPoints;
+            level++;
+            requiredPoints = Math.floor(1000 / (100 - level));
+        }
+    
+        let progress = ((points - totalPoints) / requiredPoints) * 100;
+        return { level, progress };
+    };
+    
+    const { level, progress } = calculateLevel(user.points);
+    const getTitle = (level) => {
+        const titles = [
+            "Novato", "Estudiante", "Aprendiz", "Intermedio", "Avanzado", 
+            "Experto", "Maestro", "Elite", "Veterano", "Hacker Legendario"
+        ];
+        return titles[Math.floor(level / 10)];
+    };
     
 
     const validatePassword = (password) => {
@@ -195,21 +221,51 @@ const Perfil = () => {
     };
     
     
+    const getNewToken = async () => {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (!refreshToken) return;
+    
+        try {
+            const response = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
+                refresh: refreshToken,
+            });
+    
+            localStorage.setItem("accessToken", response.data.access);
+            return response.data.access;
+        } catch (err) {
+            console.error("Error al refrescar el token:", err);
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            navigate("/login");
+        }
+    };
     
 
     const handleDeleteAccount = async () => {
         try {
-            const token = localStorage.getItem("accessToken");
-            await axios.delete("http://127.0.0.1:8000/api/user/delete/", {
+            console.log("Token antes de eliminar cuenta:", localStorage.getItem("accessToken"));
+            let token = localStorage.getItem("accessToken");
+            if (!token) {
+                token = await getNewToken();
+                if (!token) {
+                    navigate("/login");
+                    return;
+                }
+            }
+    
+            const response = await axios.delete("http://127.0.0.1:8000/api/user/delete/", {
                 headers: { Authorization: `Bearer ${token}` },
             });
     
+            console.log(response.data.message);
             localStorage.removeItem("accessToken");
-            navigate("/"); // Redirigir al inicio tras eliminar la cuenta
+            navigate("/");
         } catch (err) {
-            setErrorDelete("Error al eliminar la cuenta. Inténtalo de nuevo.");
+            console.error("Error al eliminar la cuenta:", err.response?.data || err.message);
         }
     };
+    
+    
     
 
 
@@ -223,15 +279,22 @@ const Perfil = () => {
 
     return (
         <div className="w-screen min-h-screen flex items-center justify-center bg-white text-black">
-            <div className="w-full max-w-md bg-yellow-200 p-8 rounded-lg shadow-lg text-center">
+            <div className="w-full max-w-2xl bg-yellow-200 p-10 rounded-lg shadow-lg text-center relative">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6">Perfil</h2>
-
+                <h3 className="text-xl font-semibold">{getTitle(level)}</h3>
+    
+                <p className="text-lg font-semibold">Nivel {level}</p>
+                <div className="w-full bg-gray-300 rounded-full h-4 mb-4">
+                    <div className="bg-green-500 h-4 rounded-full" style={{ width: `${progress}%` }}></div>
+                </div>
+                <p className="text-sm">Progreso: {progress.toFixed(2)}%</p>
+    
                 <img
-                    src={originalUser.profileImage || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                    src={user.profileImage || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
                     alt="Perfil"
                     className="w-32 h-32 rounded-full mx-auto mb-6 border-4 border-black shadow-md"
                 />
-
+    
                 <div className="text-left space-y-4">
                     <div className="flex flex-col">
                         <label className="text-lg font-semibold">Nombre:</label>
@@ -243,7 +306,7 @@ const Perfil = () => {
                             className="w-full p-2 border border-gray-300 rounded-md bg-yellow-100"
                         />
                     </div>
-
+    
                     <div className="flex flex-col">
                         <label className="text-lg font-semibold">Imagen de perfil (URL):</label>
                         <input
@@ -255,79 +318,93 @@ const Perfil = () => {
                             placeholder="URL de imagen"
                         />
                     </div>
-
-                    
                 </div>
-
+    
                 <TwoFactorAuth />
-
+    
                 {success && <p className="text-green-500 mt-4">{success}</p>}
                 {errorPassword && <p className="text-red-500 mt-4">{errorPassword}</p>}
-
+    
                 <div className="flex justify-center gap-4 mt-6">
                     <button onClick={handleSave} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition">
-                    Guardar
-                </button>
-                <button onClick={() => setShowPasswordModal(true)} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition">
-                Cambiar Contraseña
-                </button>
+                        Guardar
+                    </button>
+                    <button onClick={() => setShowPasswordModal(true)} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition">
+                        Cambiar Contraseña
+                    </button>
                 </div>
-
+    
                 <button
-                onClick={() => setShowDeleteModal(true)}
-                className="bg-red-600 text-white px-4 py-2 font-bold rounded-md hover:bg-red-800 transition mt-20"
+                    onClick={() => setShowDeleteModal(true)}
+                    className="bg-red-600 text-white px-4 py-2 font-bold rounded-md hover:bg-red-800 transition mt-20"
                 >
-                Borrar Cuenta
+                    Borrar Cuenta
                 </button>
-            </div>
-
-            {showDeleteModal && (
-    <AccountDeleted
-        onConfirm={(confirm) => {
-            if (confirm) {
-                handleDeleteAccount(); // Borra la cuenta si la confirmación es válida
-            } else {
-                setShowDeleteModal(false);
-            }
-        }}
-    />
-)}
-
-
-
-            {showPasswordModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded-md shadow-lg text-center w-96">
-                        <h2 className="text-xl font-bold">Cambiar Contraseña</h2>
-
-                        <input type="password" placeholder="Contraseña Antigua" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} className="w-full p-2 border mt-2 border-gray-300 rounded-md" />
-                        <input type="password" placeholder="Nueva Contraseña" value={newPassword} onChange={(e) => { setNewPassword(e.target.value); validatePassword(e.target.value); }} className="w-full p-2 border mt-2 border-gray-300 rounded-md" />
-                        
-                        <div className="w-full h-2 bg-gray-300 rounded-full mt-2">
-                            <div className="h-2 bg-green-500 rounded-full" style={{ width: `${passwordStrength}%` }}></div>
-                        </div>
-
-                        <input type="password" placeholder="Confirmar Nueva Contraseña" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full p-2 border mt-2 border-gray-300 rounded-md" />
-
-                        {errorPassword && <p className="text-red-500 mt-2">{errorPassword}</p>}
-
-                        <div className="mt-6 flex justify-center gap-36">
-                        <button onClick={handleChangePassword} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition mt-4">
-                            Confirmar
-                        </button>
-                        <button onClick={() => setShowPasswordModal(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition mt-4">                            
-                            Cerrar
-                        </button>
-                        
+    
+                {/* Modal para borrar cuenta */}
+                {showDeleteModal && (
+                    <AccountDeleted
+                        onConfirm={(confirm) => {
+                            if (confirm) {
+                                handleDeleteAccount();
+                            } else {
+                                setShowDeleteModal(false);
+                            }
+                        }}
+                    />
+                )}
+    
+                {/* Modal para cambiar contraseña */}
+                {showPasswordModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div className="bg-white p-6 rounded-md shadow-lg text-center w-96">
+                            <h2 className="text-xl font-bold">Cambiar Contraseña</h2>
+    
+                            <input 
+                                type="password" 
+                                placeholder="Contraseña Antigua" 
+                                value={oldPassword} 
+                                onChange={(e) => setOldPassword(e.target.value)} 
+                                className="w-full p-2 border mt-2 border-gray-300 rounded-md" 
+                            />
+                            <input 
+                                type="password" 
+                                placeholder="Nueva Contraseña" 
+                                value={newPassword} 
+                                onChange={(e) => { 
+                                    setNewPassword(e.target.value); 
+                                    validatePassword(e.target.value); 
+                                }} 
+                                className="w-full p-2 border mt-2 border-gray-300 rounded-md" 
+                            />
+                            
+                            <div className="w-full h-2 bg-gray-300 rounded-full mt-2">
+                                <div className="h-2 bg-green-500 rounded-full" style={{ width: `${passwordStrength}%` }}></div>
+                            </div>
+    
+                            <input 
+                                type="password" 
+                                placeholder="Confirmar Nueva Contraseña" 
+                                value={confirmPassword} 
+                                onChange={(e) => setConfirmPassword(e.target.value)} 
+                                className="w-full p-2 border mt-2 border-gray-300 rounded-md" 
+                            />
+    
+                            {errorPassword && <p className="text-red-500 mt-2">{errorPassword}</p>}
+    
+                            <div className="mt-6 flex justify-center gap-4">
+                                <button onClick={handleChangePassword} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition">
+                                    Confirmar
+                                </button>
+                                <button onClick={() => setShowPasswordModal(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
+                                    Cerrar
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
-
-        
-    
-);
-};
-
+    );
+}
 export default Perfil;

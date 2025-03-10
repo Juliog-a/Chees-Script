@@ -1,43 +1,31 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.contrib.auth import authenticate
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
-import json
-from rest_framework.decorators import action
-from rest_framework.decorators import api_view
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status, permissions
-from rest_framework.decorators import api_view, permission_classes
-import logging
-from rest_framework.throttling import UserRateThrottle
-from django.db.models import F
-import pyotp
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.views import View
-import pyotp
-import json
-from django.contrib.auth import authenticate
-from django.http import JsonResponse
-from django.views import View
+from rest_framework.authentication import SessionAuthentication
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
+from rest_framework.throttling import UserRateThrottle
+from django.db.models import F
 from django.core.cache import cache
-
-
-
+from django.core.mail import send_mail
+import logging
+import json
+import pyotp
+import os
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.contrib.auth.password_validation import validate_password
 
 from .serializers import (
     DesafioSerializer, PublicacionSerializer, ComentarioPublicacionSerializer,
@@ -60,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 class ListarDesafiosView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         desafios = Desafio.objects.all()
@@ -75,15 +63,13 @@ class UsuarioView(APIView):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def obtener_usuario(request):
-    """ Devuelve la información del usuario autenticado """
+    """ Devuelve información limitada del usuario autenticado """
     usuario = request.user
     return Response({
         "id": usuario.id,
         "username": usuario.username,
-        "email": usuario.email,
-        "is_staff": usuario.is_staff,
-        "is_superuser": usuario.is_superuser,
     })
+
 
 
 class DesafioViewSet(viewsets.ModelViewSet):
@@ -92,36 +78,33 @@ class DesafioViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        """ Permite crear un desafío usando `usuario_id` en la petición. """
+        """ El usuario autenticado crea el desafío, sin permitir `usuario_id` externo """
         data = request.data.copy()
-        usuario_id = data.get("usuario_id")
-
-        if not usuario_id:
-            return Response({"error": "El campo usuario_id es obligatorio."}, status=status.HTTP_400_BAD_REQUEST)
-
-        usuario = get_object_or_404(User, id=usuario_id)
-        data["usuario"] = usuario.id
+        data["usuario"] = request.user.id  # Asegura que el creador es el usuario autenticado
 
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
-            serializer.save(usuario=usuario)
+            serializer.save(usuario=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def toggle_like(self, request, pk=None):
         """ Permite a los usuarios dar o quitar "Me gusta" a un desafío. """
         desafio = self.get_object()
         user = request.user
+        """ Protege contra spam de likes """
 
-        if user in desafio.likes.all():
-            desafio.likes.remove(user)  # Quitar like
+        if desafio.likes.filter(id=user.id).exists():
+            desafio.likes.remove(user)
             liked = False
         else:
-            desafio.likes.add(user)  # Dar like
+            desafio.likes.add(user)
             liked = True
 
         return Response({"liked": liked})
+    
     
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def mis_favoritos(self, request):
@@ -188,6 +171,7 @@ class DesafioViewSet(viewsets.ModelViewSet):
 
 
 
+
 class FormularioFeedbackViewSet(viewsets.ModelViewSet):
     queryset = FormularioFeedback.objects.all()
     serializer_class = FormularioFeedbackSerializer
@@ -226,7 +210,7 @@ class RecursosDidacticosViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         """
-        Permite filtrar recursos por desafio y tipo (teoria/pista).
+        Filtra recursos asegurando que `desafio_id` y `tipo` sean válidos.
         """
         desafio_id = request.query_params.get("desafio_id")
         tipo = request.query_params.get("tipo")
@@ -234,13 +218,18 @@ class RecursosDidacticosViewSet(viewsets.ModelViewSet):
         recursos = self.queryset
 
         if desafio_id:
-            recursos = recursos.filter(desafio_id=desafio_id)
+            if not desafio_id.isdigit():
+                return Response({"error": "El ID del desafío debe ser un número."}, status=status.HTTP_400_BAD_REQUEST)
+            recursos = recursos.filter(desafio_id=int(desafio_id))
 
         if tipo:
+            if tipo not in ["teoria", "pista"]:
+                return Response({"error": "Tipo inválido. Debe ser 'teoria' o 'pista'."}, status=status.HTTP_400_BAD_REQUEST)
             recursos = recursos.filter(tipo=tipo)
 
         serializer = self.serializer_class(recursos, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 
@@ -261,16 +250,26 @@ class EliminarPublicacionAPIView(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
     throttle_classes = [BajaFrecuenciaThrottle] 
+
     def delete(self, request, publicacion_id):
+        """ Evita ataques de fuerza bruta limitando intentos de eliminación """
+        cache_key = f"delete_attempts_{request.user.id}"
+        intentos = cache.get(cache_key, 0)
+
+        if intentos >= 5:
+            return Response({"error": "Demasiados intentos de eliminación. Intenta más tarde."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        cache.set(cache_key, intentos + 1, timeout=600)  # Bloquea después de 5 intentos por 10 minutos
+
         publicacion = get_object_or_404(Publicacion, id=publicacion_id)
 
-        # Permitir eliminación si el usuario es dueño o admin/staff
         if request.user == publicacion.usuario or request.user.is_staff or request.user.is_superuser:
             publicacion.delete()
+            cache.delete(cache_key)  # Restablece intentos si fue exitoso
             return Response({"mensaje": "Publicación eliminada con éxito"}, status=status.HTTP_204_NO_CONTENT)
-        else:
-            logger.warning(f"Intento de eliminación no autorizado: Usuario {request.user.id} intentó eliminar la publicación {publicacion_id}")
-            return Response({"error": "No tienes permiso para eliminar esta publicación"}, status=status.HTTP_403_FORBIDDEN)
+
+        logger.warning(f"Intento de eliminación no autorizado: Usuario {request.user.id} intentó eliminar la publicación {publicacion_id}")
+        return Response({"error": "No tienes permiso para eliminar esta publicación"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class PublicacionViewSet(viewsets.ModelViewSet):
@@ -280,19 +279,23 @@ class PublicacionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        """ Crear una publicación con el usuario autenticado """
-        print("Datos recibidos en la API:", request.data)
+        """ Crea una publicación, con opción de asociarla a un desafío """
+        usuario = request.user  # Usuario autenticado
 
-        usuario = request.user
         data = request.data.copy()
-        data["usuario"] = usuario.id
+        data["usuario"] = usuario.id  # Se asegura de que el usuario autenticado es el creador
+
+        # 🔹 Si se proporciona un `desafio_id`, intenta asociarlo; de lo contrario, es `None`
+        desafio_id = data.get("desafio_id")
+        if desafio_id:
+            desafio = get_object_or_404(Desafio, id=desafio_id)
+            data["desafio"] = desafio.id  # Asigna el ID del desafío
 
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
-            serializer.save(usuario=usuario)
+            serializer.save(usuario=usuario)  # Guarda la publicación sin exigir `desafio`
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        print("Error de validación:", serializer.errors)  
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def list(self, request, *args, **kwargs):
@@ -373,7 +376,7 @@ class ComentarioPublicacionViewSet(viewsets.ModelViewSet):
 class FormularioContactoViewSet(viewsets.ModelViewSet):
     queryset = FormularioContacto.objects.all()
     serializer_class = FormularioContactoSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         print("Datos recibidos en el request:", json.dumps(request.data, indent=2))
@@ -404,22 +407,33 @@ class CustomAuthToken(APIView):
         if not username_or_email or not password:
             return Response({"error": "Faltan datos."}, status=status.HTTP_400_BAD_REQUEST)
 
+        cache_key = f"failed_attempts_{username_or_email}"
+        failed_attempts = cache.get(cache_key, 0)
+
+        if failed_attempts >= 5:
+            return Response({"error": "Demasiados intentos fallidos. Intenta más tarde."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
         user = None
         if "@" in username_or_email:
             try:
                 user = User.objects.get(email=username_or_email)
             except User.DoesNotExist:
+                cache.set(cache_key, failed_attempts + 1, timeout=300)  # Bloqueo por 5 minutos
                 return Response({"error": "Usuario no encontrado."}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             user = authenticate(username=username_or_email, password=password)
 
         if user is not None:
+            cache.delete(cache_key)  # Restablecer intentos fallidos
             refresh = RefreshToken.for_user(user)
             return Response({
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
             })
+        
+        cache.set(cache_key, failed_attempts + 1, timeout=300)
         return Response({"error": "Credenciales incorrectas"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 class UserDetailView(APIView):
@@ -450,7 +464,17 @@ class UserUpdateView(APIView):
 
         # Verificar si el email se debe actualizar
         if "email" in data:
-            user.email = data["email"]
+            email = data["email"].strip()
+    
+            try:
+                validate_email(email)
+            except ValidationError:
+                return Response({"error": "El email ingresado no es válido."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if User.objects.filter(email=email).exclude(id=user.id).exists():
+                return Response({"error": "El email ya está en uso."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.email = email
 
         # Manejo de cambio de contraseña
         old_password = data.get("oldPassword", "").strip()
@@ -514,6 +538,11 @@ class RegisterView(APIView):
         if not username or not email or not password:
             return Response({"error": "Todos los campos son obligatorios"}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            return Response({"error": " ".join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+
         if User.objects.filter(username=username).exists():
             return Response({"error": "El usuario ya existe."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -540,9 +569,18 @@ class ChangePasswordView(APIView):
         user = request.user
         old_password = request.data.get("oldPassword")
         new_password = request.data.get("newPassword")
+        cache_key = f"failed_change_attempts_{user.id}"
+        failed_attempts = cache.get(cache_key, 0)
+
+        if failed_attempts >= 3:
+            return Response({"error": "Demasiados intentos fallidos. Intenta más tarde."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         if not check_password(old_password, user.password):
+            cache.set(cache_key, failed_attempts + 1, timeout=600)  # Bloqueo por 10 minutos
             return Response({"error": "La contraseña antigua es incorrecta."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cache.delete(cache_key)  # Restablecer intentos fallidos
+
 
         if len(new_password) < 8:
             return Response({"error": "La nueva contraseña debe tener al menos 8 caracteres."}, status=status.HTTP_400_BAD_REQUEST)
@@ -560,7 +598,7 @@ class ChangePasswordView(APIView):
 
 
 
-
+#Doble factor de verificación
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TwoFactorAuthView(View):
@@ -737,7 +775,17 @@ def disable_2fa(request):
         request.user.profile.is2fa_enabled = False
         request.user.profile.save()
 
-        return Response({"status": "success", "message": "2FA desactivado correctamente."}, status=200)
+        # Enviar notificación por correo al desactivar el 2fa
+        send_mail(
+            "2FA desactivado en Cheese Script",
+            "Has desactivado la autenticación en dos pasos (2FA). Si no fuiste tú, cambia tu contraseña inmediatamente.",
+            settings.EMAIL_HOST_USER,  # Ahora usa settings correctamente
+            [request.user.email],
+            fail_silently=True,
+        )
+
+
+        return Response({"status": "success", "message": "2FA desactivado correctamente y notificación enviada."}, status=200)
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
