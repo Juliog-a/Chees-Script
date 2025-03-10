@@ -18,7 +18,7 @@ const FiltroCategorias = ({
     ];
 
     return (
-        <div className="w-full flex flex-col md:flex-row items-center justify-between mb-6">
+<div className="w-full flex flex-col md:flex-row items-center justify-center md:justify-around mb-6 flex-wrap gap-x-4">
             
             {/* Filtro por dificultad*/}
             <div className="flex flex-wrap gap-4">

@@ -60,8 +60,8 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="w-full bg-black text-white py-4 px-10 flex items-center justify-between shadow-md fixed top-0 left-0 z-50">
-            {/* Logo */}
+    <nav className="w-full max-w-screen bg-black text-white py-4 px-6 flex items-center justify-between shadow-md fixed top-0 left-0 z-50 overflow-hidden">
+{/* Logo */}
             <Link to="/" className="flex items-center">
                 <img src={logo} alt="Chees Script" className="h-12 cursor-pointer" />
             </Link>

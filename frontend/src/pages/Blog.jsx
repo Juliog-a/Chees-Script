@@ -79,23 +79,23 @@ export default function Blog() {
     };
 
     return (
-        <div className="w-full min-h-screen flex flex-col bg-white text-black p-6">
+        <div className="w-screen min-h-screen flex flex-col bg-white text-black p-6 overflow-x-hidden">
             <h1 className="text-3xl md:text-5xl font-bold text-center mb-8">Blog</h1>
             {error && <p className="text-red-600 text-center">{error}</p>}
-
+    
             {/* Botón para abrir el formulario */}
             <button 
                 onClick={() => setMostrarFormulario(true)} 
                 className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-900 transition mx-auto mb-6 shadow-md">
                 Crear Publicación
             </button>
-
+    
             {/* Formulario de creación */}
             {mostrarFormulario && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white p-6 rounded-md shadow-lg text-center w-96">
                         <h2 className="text-xl font-bold mb-4">Crear Publicación</h2>
-
+    
                         <input 
                             type="text" 
                             placeholder="Título" 
@@ -105,7 +105,7 @@ export default function Blog() {
                             maxLength={maxCaracteresTitulo} 
                         />
                         <div className="text-right text-gray-500 text-sm">{titulo.length}/{maxCaracteresTitulo}</div>
-
+    
                         <textarea 
                             placeholder="Contenido" 
                             value={contenido} 
@@ -114,7 +114,7 @@ export default function Blog() {
                             maxLength={maxCaracteresContenido}
                         ></textarea>
                         <div className="text-right text-gray-500 text-sm">{contenido.length}/{maxCaracteresContenido}</div>
-
+    
                         <input 
                             type="text" 
                             placeholder="URL de imagen (Opcional)" 
@@ -126,7 +126,7 @@ export default function Blog() {
                             className={`w-full p-2 border mt-2 rounded-md ${errorImagen ? "border-red-500" : "border-gray-300"}`} 
                         />
                         {errorImagen && <p className="text-red-600 text-sm mt-1">{errorImagen}</p>} {/* Mostramos error si hay */}
-
+    
                         <div className="flex justify-between mt-4">
                             <button 
                                 onClick={handlePublicar} 
@@ -142,11 +142,17 @@ export default function Blog() {
                     </div>
                 </div>
             )}
-
+    
             {/* Lista de Publicaciones */}
-            <div className="grid w-full justify-center gap-72 
-                grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+            <div className="grid justify-center"
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+                    gap: "40px",
+                    alignItems: "start" // Evita que las tarjetas se monten entre sí
+                }}
             >
+
                 {publicaciones.length > 0 ? (
                     publicaciones.map((post) => (
                         <PublicacionCard
@@ -160,4 +166,5 @@ export default function Blog() {
             </div>
         </div>
     );
+    
 }

@@ -29,19 +29,19 @@ export default function Desafios() {
     }, [mostrarFavoritos]);  // Se actualiza cada vez que se pulsa el filtro de favoritos
 
     return (
-        <div className="w-screen min-h-screen flex flex-col bg-white text-black p-6">
+        <div className="w-screen min-h-screen flex flex-col bg-white text-black p-6 overflow-x-hidden" style={{ paddingLeft: "5px" }}>
             <h1 className="text-3xl md:text-5xl font-bold text-center mb-8">Lista de Desafíos</h1>
             {error && <p className="text-red-600 text-center">{error}</p>}
-
+    
             <FiltroCategorias 
                 categoriaSeleccionada={categoriaSeleccionada} 
                 setCategoriaSeleccionada={setCategoriaSeleccionada}
                 dificultadSeleccionada={dificultadSeleccionada} 
                 setDificultadSeleccionada={setDificultadSeleccionada} 
                 mostrarFavoritos={mostrarFavoritos}
-                setMostrarFavoritos={setMostrarFavoritos} // Se lo pasamos al filtro
+                setMostrarFavoritos={setMostrarFavoritos}
             />
-
+    
             <div className="grid justify-center"
                 style={{
                     display: "grid",
