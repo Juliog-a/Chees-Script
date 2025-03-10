@@ -120,61 +120,43 @@ const Perfil = () => {
 
         return minLength && hasNumber && hasLetter && hasSpecial;
     };
-
     const handleChangePassword = async () => {
-        if (!validatePassword(newPassword)) {
-            setErrorPassword("La contraseña debe tener al menos 8 caracteres, incluir una letra, un número y un carácter especial.");
+        // Verifica que se ingresen los tres campos
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            setErrorPassword("Todos los campos son obligatorios.");
             return;
         }
-
+    
+        // Verifica que la nueva contraseña no sea igual a la anterior
         if (newPassword === oldPassword) {
             setErrorPassword("La nueva contraseña no puede ser igual a la anterior.");
             return;
         }
-
+    
+        // Verifica que ambas nuevas contraseñas coincidan
         if (newPassword !== confirmPassword) {
-            setErrorPassword("Las contraseñas no coinciden.");
+            setErrorPassword("Las nuevas contraseñas no coinciden.");
             return;
         }
-
+    
+        // Validación de requisitos de la contraseña
+        if (!validatePassword(newPassword)) {
+            setErrorPassword("La contraseña debe tener al menos 8 caracteres, incluir una letra, un número y un carácter especial.");
+            return;
+        }
+    
         try {
             const token = localStorage.getItem("accessToken");
     
-            try {
-                const token = localStorage.getItem("accessToken");
-            
-                // Verificar si el nuevo nombre de usuario ya está en uso
-                if (user.username !== originalUser.username) {
-                    const usernameExists = await axios.get(`http://127.0.0.1:8000/api/check-username/${user.username}/`, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-            
-                    if (usernameExists.data.exists) {
-                        setErrorPassword("El nombre de usuario ya está en uso.");
-                        return;
-                    }
-                }
-            
-                await axios.put(
-                    "http://127.0.0.1:8000/api/user/update/",
-                    {
-                        profile_image: user.profileImage || undefined,
-                        username: user.username !== originalUser.username ? user.username : undefined,
-                        favoriteChallenges: user.favoriteChallenges !== originalUser.favoriteChallenges ? user.favoriteChallenges : undefined,
-                    },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-            
-                setSuccess("Perfil actualizado correctamente.");
-                setOriginalUser({ ...user });
-            } catch (err) {
-                setErrorPassword("Error al actualizar el perfil.");
-            }
-            
-    
-            const newAccessToken = response.data.access_token;
-            
-            localStorage.setItem("accessToken", newAccessToken);
+            const response = await axios.put(
+                "http://127.0.0.1:8000/api/change-password/",
+                {
+                    oldPassword,
+                    newPassword,
+                    confirmPassword
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
     
             setSuccess("Contraseña cambiada con éxito.");
             setErrorPassword("");
@@ -187,6 +169,7 @@ const Perfil = () => {
             setErrorPassword(err.response?.data?.error || "Error al cambiar la contraseña.");
         }
     };
+    
 
     const handleSave = async () => {
         try {
@@ -279,67 +262,72 @@ const Perfil = () => {
 
     return (
         <div className="w-screen min-h-screen flex items-center justify-center bg-white text-black">
-            <div className="w-full max-w-2xl bg-yellow-200 p-10 rounded-lg shadow-lg text-center relative">
-                <h2 className="text-4xl md:text-5xl font-bold mb-6">Perfil</h2>
-                <h3 className="text-xl font-semibold">{getTitle(level)}</h3>
+            <div className="w-full max-w-6xl max-h-[1200px] bg-yellow-200 p-32 rounded-lg shadow-lg relative mt-32">
+            <h2 className="text-5xl font-bold mb-6 text-center text-gray-900">Perfil</h2>
     
-                <p className="text-lg font-semibold">Nivel {level}</p>
-                <div className="w-full bg-gray-300 rounded-full h-4 mb-4">
-                    <div className="bg-green-500 h-4 rounded-full" style={{ width: `${progress}%` }}></div>
-                </div>
-                <p className="text-sm">Progreso: {progress.toFixed(2)}%</p>
-    
-                <img
-                    src={user.profileImage || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
-                    alt="Perfil"
-                    className="w-32 h-32 rounded-full mx-auto mb-6 border-4 border-black shadow-md"
-                />
-    
-                <div className="text-left space-y-4">
-                    <div className="flex flex-col">
-                        <label className="text-lg font-semibold">Nombre:</label>
-                        <input
-                            type="text"
-                            name="username"
-                            value={user.username}
-                            onChange={(e) => setUser({ ...user, username: e.target.value })}
-                            className="w-full p-2 border border-gray-300 rounded-md bg-yellow-100"
+                <div className="flex items-center justify-center space-x-12">
+                    {/* Sección Izquierda: Imagen y Nivel */}
+                    <div className="flex flex-col items-center">
+                        <img
+                            src={user.profileImage || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                            alt="Perfil"
+                            className="w-44 h-44 rounded-full border-4 border-gray-800 shadow-md"
                         />
+                        <p className="text-lg font-semibold mt-2 text-gray-800">Nivel {level}</p>
+                        <div className="w-44 bg-gray-300 rounded-full h-4 mt-2">
+                            <div className="bg-green-500 h-4 rounded-full" style={{ width: `${progress}%` }}></div>
+                        </div>
                     </div>
     
-                    <div className="flex flex-col">
-                        <label className="text-lg font-semibold">Imagen de perfil (URL):</label>
-                        <input
-                            type="text"
-                            name="profileImage"
-                            value={user.profileImage}
-                            onChange={(e) => setUser({ ...user, profileImage: e.target.value })}
-                            className="w-full p-2 border border-gray-300 rounded-md bg-yellow-100"
-                            placeholder="URL de imagen"
-                        />
+                    {/* Sección Derecha: Formulario */}
+                    <div className="w-2/3 text-left space-y-6">
+                        <div className="flex flex-col">
+                            <label className="text-lg font-semibold">Nombre:</label>
+                            <input
+                                type="text"
+                                name="username"
+                                value={user.username}
+                                onChange={(e) => setUser({ ...user, username: e.target.value })}
+                                className="w-full p-3 border border-gray-400 rounded-md bg-yellow-100"
+                            />
+                        </div>
+    
+                        <div className="flex flex-col">
+                            <label className="text-lg font-semibold">Imagen de perfil (URL):</label>
+                            <input
+                                type="text"
+                                name="profileImage"
+                                value={user.profileImage}
+                                onChange={(e) => setUser({ ...user, profileImage: e.target.value })}
+                                className="w-full p-3 border border-gray-400 rounded-md bg-yellow-100"
+                                placeholder="URL de imagen"
+                            />
+                        </div>
+    
+                        <TwoFactorAuth />
                     </div>
                 </div>
     
-                <TwoFactorAuth />
+                {/* Mensajes de éxito/error */}
+                {success && <p className="text-green-500 mt-4 text-center">{success}</p>}
+                {errorPassword && <p className="text-red-500 mt-4 text-center">{errorPassword}</p>}
     
-                {success && <p className="text-green-500 mt-4">{success}</p>}
-                {errorPassword && <p className="text-red-500 mt-4">{errorPassword}</p>}
-    
-                <div className="flex justify-center gap-4 mt-6">
-                    <button onClick={handleSave} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition">
+                {/* Botones alineados al centro */}
+                <div className="flex justify-center gap-6 mt-8">
+                    <button onClick={handleSave} className="bg-gray-900 text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">
                         Guardar
                     </button>
-                    <button onClick={() => setShowPasswordModal(true)} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition">
+                    <button onClick={() => setShowPasswordModal(true)} className="bg-gray-900 text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">
                         Cambiar Contraseña
                     </button>
                 </div>
     
-                <button
-                    onClick={() => setShowDeleteModal(true)}
-                    className="bg-red-600 text-white px-4 py-2 font-bold rounded-md hover:bg-red-800 transition mt-20"
-                >
-                    Borrar Cuenta
-                </button>
+                {/* Botón de eliminar cuenta centrado y más visible */}
+                <div className="flex justify-center mt-12">
+                    <button onClick={() => setShowDeleteModal(true)} className="bg-red-600 text-white px-8 py-3 font-bold rounded-md hover:bg-red-800 transition">
+                        Borrar Cuenta
+                    </button>
+                </div>
     
                 {/* Modal para borrar cuenta */}
                 {showDeleteModal && (
@@ -356,55 +344,55 @@ const Perfil = () => {
     
                 {/* Modal para cambiar contraseña */}
                 {showPasswordModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <div className="bg-white p-6 rounded-md shadow-lg text-center w-96">
-                            <h2 className="text-xl font-bold">Cambiar Contraseña</h2>
-    
-                            <input 
-                                type="password" 
-                                placeholder="Contraseña Antigua" 
-                                value={oldPassword} 
-                                onChange={(e) => setOldPassword(e.target.value)} 
-                                className="w-full p-2 border mt-2 border-gray-300 rounded-md" 
-                            />
-                            <input 
-                                type="password" 
-                                placeholder="Nueva Contraseña" 
-                                value={newPassword} 
-                                onChange={(e) => { 
-                                    setNewPassword(e.target.value); 
-                                    validatePassword(e.target.value); 
-                                }} 
-                                className="w-full p-2 border mt-2 border-gray-300 rounded-md" 
-                            />
-                            
-                            <div className="w-full h-2 bg-gray-300 rounded-full mt-2">
-                                <div className="h-2 bg-green-500 rounded-full" style={{ width: `${passwordStrength}%` }}></div>
-                            </div>
-    
-                            <input 
-                                type="password" 
-                                placeholder="Confirmar Nueva Contraseña" 
-                                value={confirmPassword} 
-                                onChange={(e) => setConfirmPassword(e.target.value)} 
-                                className="w-full p-2 border mt-2 border-gray-300 rounded-md" 
-                            />
-    
-                            {errorPassword && <p className="text-red-500 mt-2">{errorPassword}</p>}
-    
-                            <div className="mt-6 flex justify-center gap-4">
-                                <button onClick={handleChangePassword} className="bg-black text-yellow-400 px-4 py-2 font-bold rounded-md hover:bg-gray-900 transition">
-                                    Confirmar
-                                </button>
-                                <button onClick={() => setShowPasswordModal(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
-                                    Cerrar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-md shadow-lg text-center w-96">
+            <h2 className="text-xl font-bold">Cambiar Contraseña</h2>
+
+            <input 
+                type="password" 
+                placeholder="Contraseña Antigua" 
+                value={oldPassword} 
+                onChange={(e) => setOldPassword(e.target.value)} 
+                className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
+            />
+
+            <input 
+                type="password" 
+                placeholder="Nueva Contraseña" 
+                value={newPassword} 
+                onChange={(e) => { 
+                    setNewPassword(e.target.value); 
+                    validatePassword(e.target.value); 
+                }} 
+                className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
+            />
+
+            <input 
+                type="password" 
+                placeholder="Confirmar Nueva Contraseña" 
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+                className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
+            />
+
+            {errorPassword && <p className="text-red-500 mt-2">{errorPassword}</p>}
+
+            <div className="mt-6 flex justify-center gap-6">
+                <button onClick={handleChangePassword} className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-900 transition">
+                    Confirmar
+                </button>
+                <button onClick={() => setShowPasswordModal(false)} className="bg-gray-500 px-6 py-3 rounded-md text-white font-bold hover:bg-gray-600 transition">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+)}
+
             </div>
         </div>
     );
+    
+    
 }
 export default Perfil;
