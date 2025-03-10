@@ -274,6 +274,8 @@ const Perfil = () => {
                             className="w-44 h-44 rounded-full border-4 border-gray-800 shadow-md"
                         />
                         <p className="text-lg font-semibold mt-2 text-gray-800">Nivel {level}</p>
+                        <p className="text-xl font-bold text-gray-900">{getTitle(level)}</p> {/* Título del nivel */}
+
                         <div className="w-44 bg-gray-300 rounded-full h-4 mt-2">
                             <div className="bg-green-500 h-4 rounded-full" style={{ width: `${progress}%` }}></div>
                         </div>
