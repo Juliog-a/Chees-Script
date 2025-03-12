@@ -15,21 +15,22 @@ const Navbar = () => {
         }
     }, [isAuthenticated]);
 
-    const calculateLevel = (points) => {
-        if (points >= 1000) return { level: 100, progress: 100 };
-        let level = 1;
-        let requiredPoints = 5;
-        let totalPoints = 0;
-    
-        while (totalPoints + requiredPoints <= points && level < 100) {
-            totalPoints += requiredPoints;
-            level++;
-            requiredPoints = Math.floor(1000 / (100 - level));
-        }
-    
-        let progress = ((points - totalPoints) / requiredPoints) * 100;
-        return { level, progress };
-    };
+// Cada 10 puntos aumenta 1 nivel, hasta nivel 100 al llegar a 1000 puntos.
+const calculateLevel = (points) => {
+    // Caso especial: 1000 o más => nivel 100
+    if (points >= 1000) {
+      return { level: 100, progress: 100 };
+    }
+  
+    // Nivel calculado con división entera
+    const level = Math.floor(points / 10);
+    // Resto para la barra de progreso
+    const remainder = points % 10;
+    // Porcentaje de progreso entre un nivel y el siguiente
+    const progress = (remainder / 10) * 100;
+  
+    return { level, progress };
+  };
     
 
     const fetchUserData = async () => {

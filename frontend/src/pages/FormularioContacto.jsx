@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function FormularioContacto() {
+  const navigate = useNavigate(); // ✅ Definimos navigate para redireccionar si no hay token
+
   const [formData, setFormData] = useState({
     email: "",
     comentario: "",
@@ -12,8 +15,44 @@ export default function FormularioContacto() {
   const [captchaPregunta, setCaptchaPregunta] = useState("");
   const [captchaRespuesta, setCaptchaRespuesta] = useState(null);
 
+  // ✅ Generar captcha al cargar el componente
   useEffect(() => {
     generarCaptcha();
+    
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    // ✅ Validar autenticación del usuario
+    fetch("http://localhost:8000/api/user/", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("No autorizado");
+        return res.json();
+      })
+      .catch(() => {
+        localStorage.removeItem("accessToken");
+        navigate("/login");
+      });
+  }, []);
+
+  // ✅ Obtener trofeos al cargar el componente
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      console.error("No hay token disponible, el usuario no está autenticado.");
+      return;
+    }
+
+    fetch("http://localhost:8000/api/trofeos/", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(response => response.json())
+      .then(data => console.log("Trofeos obtenidos:", data))
+      .catch(error => console.error("Error obteniendo trofeos:", error));
   }, []);
 
   const generarCaptcha = () => {
@@ -33,43 +72,49 @@ export default function FormularioContacto() {
     e.preventDefault();
     setError("");
     setMensajeExito("");
-  
+
     if (!validateEmail(formData.email)) {
       setError("Solo se permiten correos de Gmail y Outlook.");
       return;
     }
-  
+
     if (parseInt(formData.captcha) !== captchaRespuesta) {
       setError("Captcha incorrecto. Inténtalo de nuevo.");
       generarCaptcha();
       return;
     }
-  
+
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setError("Debes iniciar sesión para enviar un mensaje.");
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:8000/api/contacto/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           autor: formData.email,
           mensaje: formData.comentario,
         }),
       });
-  
+
       if (response.ok) {
         setMensajeExito("Mensaje enviado correctamente.");
         setFormData({ email: "", comentario: "", captcha: "" });
         generarCaptcha();
       } else {
-        setError("Hubo un error al enviar el mensaje.");
+        const errorData = await response.json();
+        setError(errorData.detail || "Hubo un error al enviar el mensaje.");
       }
     } catch (err) {
       setError("Error de conexión con el servidor.");
     }
   };
-
-  
 
   return (
     <div className="w-screen min-h-screen flex flex-col bg-white text-black">

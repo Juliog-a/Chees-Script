@@ -27,6 +27,20 @@ const DesafioPage = () => {
     if (loading) return <p className="text-center text-gray-700 text-lg">Cargando desafío...</p>;
     if (!desafio) return <p className="text-center text-red-600 text-lg">Error: Desafío no encontrado.</p>;
 
+    const cargarTrofeos = async () => {
+        try {
+            const res = await axios.get("http://127.0.0.1:8000/api/trofeos/", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            console.log("Trofeos recargados:", res.data);
+            // Opcional: setTrofeos(res.data.trofeos); si quisieras mostrarlos en este componente
+        } catch (error) {
+            console.error("Error al cargar trofeos:", error);
+        }
+    };
+
+
+
     // Función para verificar la respuesta
     const verificarRespuesta = async () => {
         try {
@@ -40,6 +54,8 @@ const DesafioPage = () => {
     
             if (response.data.solucionado) {
                 setDesafio(prev => ({ ...prev, solucionado: true })); // Marcar como solucionado
+                await cargarTrofeos();
+
             }
         } catch (error) {
             console.error("Error al verificar respuesta:", error);

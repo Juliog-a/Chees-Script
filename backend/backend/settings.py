@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from rest_framework.settings import api_settings
+from django.conf import settings
+from django.conf.urls.static import static
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,7 +21,7 @@ TAILWIND_APP_NAME = 'theme'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "templates"),  # Archivos estáticos del frontend
+    os.path.join(BASE_DIR, "static"),  # Archivos estáticos del frontend
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
 
@@ -172,6 +174,9 @@ DATABASES = {
     }
 }
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Password validation configuration
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -193,9 +198,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
 
 
 # Default primary key field type

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AccountDeleted from "../components/AccountDeleted.jsx";
 import TwoFactorAuth from "../components/TwoFactorAuth";
+import Trofeos from "../components/Trofeos";
 
 const Perfil = () => {
     const navigate = useNavigate();
@@ -72,28 +73,29 @@ const Perfil = () => {
     
     if (loading) {
         return (
-            <div className="w-screen min-h-screen flex items-center justify-center bg-white text-black">
+            <div className="w-screen min-h-screen flex items-center justify-center bg-white text-black mt-24">
                 <p className="text-xl font-bold">Cargando...</p>
             </div>
         );
     }
     
     
-    const calculateLevel = (points) => {
-        if (points >= 1000) return { level: 100, progress: 100 };
-        let level = 1;
-        let requiredPoints = 5;
-        let totalPoints = 0;
-    
-        while (totalPoints + requiredPoints <= points && level < 100) {
-            totalPoints += requiredPoints;
-            level++;
-            requiredPoints = Math.floor(1000 / (100 - level));
-        }
-    
-        let progress = ((points - totalPoints) / requiredPoints) * 100;
-        return { level, progress };
-    };
+// Cada 10 puntos aumenta 1 nivel, hasta nivel 100 al llegar a 1000 puntos.
+const calculateLevel = (points) => {
+    // Caso especial: 1000 o más => nivel 100
+    if (points >= 1000) {
+      return { level: 100, progress: 100 };
+    }
+  
+    // Nivel calculado con división entera
+    const level = Math.floor(points / 10);
+    // Resto para la barra de progreso
+    const remainder = points % 10;
+    // Porcentaje de progreso entre un nivel y el siguiente
+    const progress = (remainder / 10) * 100;
+  
+    return { level, progress };
+  };
     
     const { level, progress } = calculateLevel(user.points);
     const getTitle = (level) => {
@@ -261,9 +263,10 @@ const Perfil = () => {
     }
 
     return (
-        <div className="w-screen min-h-screen flex items-center justify-center bg-white text-black">
-            <div className="w-full max-w-6xl max-h-[1200px] bg-yellow-200 p-32 rounded-lg shadow-lg relative mt-32">
-            <h2 className="text-5xl font-bold mb-6 text-center text-gray-900">Perfil</h2>
+        <div className="w-screen min-h-screen flex flex-col items-center justify-center bg-white text-black mt-24">
+            {/* Contenedor principal del perfil */}
+            <div className="w-full max-w-6xl bg-yellow-200 p-12 rounded-lg shadow-lg mt-12">
+                <h2 className="text-5xl font-bold mb-6 text-center text-gray-900">Perfil</h2>
     
                 <div className="flex items-center justify-center space-x-12">
                     {/* Sección Izquierda: Imagen y Nivel */}
@@ -274,8 +277,8 @@ const Perfil = () => {
                             className="w-44 h-44 rounded-full border-4 border-gray-800 shadow-md"
                         />
                         <p className="text-lg font-semibold mt-2 text-gray-800">Nivel {level}</p>
-                        <p className="text-xl font-bold text-gray-900">{getTitle(level)}</p> {/* Título del nivel */}
-
+                        <p className="text-xl font-bold text-gray-900">{getTitle(level)}</p>
+    
                         <div className="w-44 bg-gray-300 rounded-full h-4 mt-2">
                             <div className="bg-green-500 h-4 rounded-full" style={{ width: `${progress}%` }}></div>
                         </div>
@@ -310,10 +313,6 @@ const Perfil = () => {
                     </div>
                 </div>
     
-                {/* Mensajes de éxito/error */}
-                {success && <p className="text-green-500 mt-4 text-center">{success}</p>}
-                {errorPassword && <p className="text-red-500 mt-4 text-center">{errorPassword}</p>}
-    
                 {/* Botones alineados al centro */}
                 <div className="flex justify-center gap-6 mt-8">
                     <button onClick={handleSave} className="bg-gray-900 text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">
@@ -330,9 +329,21 @@ const Perfil = () => {
                         Borrar Cuenta
                     </button>
                 </div>
+            </div>
     
-                {/* Modal para borrar cuenta */}
-                {showDeleteModal && (
+            {/* Sección de Trofeos justo debajo del perfil */}
+            <div className="w-full max-w-6xl bg-yellow-200 p-12 rounded-lg shadow-lg mt-6">
+                <h2 className="text-3xl font-bold text-center text-gray-900"></h2>
+                <Trofeos />
+
+
+
+
+
+
+
+                  {/* Modal para borrar cuenta */}
+                  {showDeleteModal && (
                     <AccountDeleted
                         onConfirm={(confirm) => {
                             if (confirm) {
@@ -344,6 +355,11 @@ const Perfil = () => {
                     />
                 )}
     
+
+
+
+
+
                 {/* Modal para cambiar contraseña */}
                 {showPasswordModal && (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -393,7 +409,10 @@ const Perfil = () => {
 
             </div>
         </div>
-    );
+
+
+
+    );    
     
     
 }

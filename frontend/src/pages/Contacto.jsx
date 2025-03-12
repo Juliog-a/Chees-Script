@@ -11,7 +11,7 @@ export default function Contacto() {
 
           {/* Información de contacto */}
           <div className="mt-6 text-lg md:text-xl space-y-3">
-            <p>📞 Teléfono: (+34) 055 65 12 43</p>
+            <p>📞 Teléfono: (+34) 6XX 7X 5X 8X</p>
             <p>📧 Correo de contacto: <span className="font-semibold">cheesscript@gmail.com</span></p>
             <p>📘 Facebook: <span className="font-semibold">CheeseandoelScript</span></p>
             <p>📸 Instagram: <span className="font-semibold">CheeseandoelScript</span></p>

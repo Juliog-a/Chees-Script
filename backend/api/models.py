@@ -3,7 +3,9 @@ from django.contrib.auth.models import User  # Usa auth_user
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.text import slugify
-
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils.timezone import now
 # ---------------------- MODELOS ----------------------
 
 class Desafio(models.Model):
@@ -38,6 +40,8 @@ class Desafio(models.Model):
     puntuacion = models.IntegerField(default=0)
     hecho = models.BooleanField(default=False)
     likes = models.ManyToManyField(User, related_name="desafios_likeados", blank=True) 
+    
+    trofeos_desbloqueables = models.ManyToManyField("Trofeo", related_name="desafios_asociados", blank=True)
 
     # Campos específicos para desafíos de cifrado
     enunciado = models.TextField(blank=True, null=True)  # Explicación del reto
@@ -58,6 +62,19 @@ class Desafio(models.Model):
         null=True
     )  # Tipo de cifrado aplicado al texto
     solucion = models.CharField(max_length=256, blank=True, null=True)  # Respuesta correcta
+
+    def completar_desafio(self, user):
+        """
+        Marca el desafío como completado para el usuario.
+        """
+        if not UsuarioDesafio.objects.filter(usuario=user, desafio=self).exists():
+            UsuarioDesafio.objects.create(usuario=user, desafio=self)
+            Profile.objects.filter(user=user).update(points=models.F('points') + self.puntuacion)
+            Trofeo.check_desafio_completados(user)
+
+
+        # Verificar si el usuario ha desbloqueado un trofeo por completar un número específico de desafíos
+        Trofeo.check_desafio_completados(user)
 
     def __str__(self):
         return f"{self.nombre} ({self.tematica} - {self.nivel_dificultad})"
@@ -107,9 +124,6 @@ class UsuarioDesafio(models.Model):
     def __str__(self):
         return f"{self.usuario.username} - {self.desafio.nombre}"
 
-
-
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     points = models.IntegerField(default=0)
@@ -122,6 +136,64 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.points} puntos"
 
+class Trofeo(models.Model):
+    nombre = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    imagen_bloqueada = models.ImageField(upload_to="trofeos/", blank=True, null=True)
+    imagen_desbloqueada = models.ImageField(upload_to="trofeos/", blank=True, null=True)
+    desbloqueado = models.BooleanField(default=False)
+    fecha_obtenido = models.DateTimeField(blank=True, null=True)
+    usuarios_desbloqueados = models.ManyToManyField(User, blank=True, related_name='trofeos_desbloqueados')
+    profile = models.ForeignKey("Profile", on_delete=models.CASCADE, blank=True, null=True)
+    
+    nivel_requerido = models.IntegerField(null=True, blank=True, default=None)
+    desbloqueo_por_nivel = models.BooleanField(default=False)
+    desafios_desbloqueantes = models.ManyToManyField(Desafio, blank=True, related_name='desafios_desbloqueantes')
+
+    def save(self, *args, **kwargs):
+        """
+        Verifica si debe desbloquearse.
+        """
+        if not self.desbloqueado:
+            if self.desbloqueo_por_nivel:
+                # Podrías dejarlo a un estado "desbloqueado global" si cumples X condición
+                # O simplemente no usar auto-lógica y confiar en vistas.
+                pass
+            else:
+                pass
+
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def check_desafio_completados(user):
+        """
+        Verifica si un usuario ha completado el número requerido de desafíos
+        o ha completado algún desafío específico.
+        """
+        profile = getattr(user, 'profile', None)
+        user_points = profile.points if profile else 0
+        trofeos = Trofeo.objects.exclude(usuarios_desbloqueados=user)
+        desafios_completados = UsuarioDesafio.objects.filter(usuario=user).values_list("desafio", flat=True)
+
+        for trofeo in trofeos:
+            # Si es un trofeo por nivel
+            if trofeo.desbloqueo_por_nivel:
+                # Supongamos que estás contando desafíos completados
+                # (Ojo: si tu "nivel" es un número de puntos, cambia la lógica)
+                if user_points >= (trofeo.nivel_requerido or 0):
+                    trofeo.usuarios_desbloqueados.add(user)
+                    trofeo.fecha_obtenido = now()
+                    trofeo.save()
+            else:
+                # Si es un trofeo por desafíos, revisa si el usuario completó
+                # alguno de los desafíos 'desafios_desbloqueantes'
+                if trofeo.desafios_desbloqueantes.filter(id__in=desafios_completados).exists():
+                    trofeo.usuarios_desbloqueados.add(user)
+                    trofeo.fecha_obtenido = now()
+                    trofeo.save()
+    def __str__(self):
+        estado = "Desbloqueado" if self.desbloqueado else "Bloqueado"
+        return f"{self.nombre} - {'Desbloqueado' if self.desbloqueado else 'Bloqueado'}"
 
 class Publicacion(models.Model):
     titulo = models.CharField(max_length=128)
@@ -156,6 +228,16 @@ class FormularioFeedback(models.Model):
     def __str__(self):
         return f"Feedback de {self.autor} en {self.desafio.nombre}"
 
+class FormularioContacto(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Permitir NULL
+    autor = models.CharField(max_length=64)
+    mensaje = models.TextField()
+    estado = models.CharField(max_length=16, default="Pendiente")
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Mensaje de {self.autor}"
+    
 
 class Snippet(models.Model):#NO SE USA
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -166,20 +248,6 @@ class Snippet(models.Model):#NO SE USA
 
     def __str__(self):
         return self.titulo
-
-
-class FormularioContacto(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Permitir NULL
-    autor = models.CharField(max_length=64)
-    mensaje = models.TextField()
-    estado = models.CharField(max_length=16, default="Pendiente")
-    fecha_envio = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Mensaje de {self.autor}"
-
-  
-
 
 
 # ---------------------- SEÑALES ----------------------

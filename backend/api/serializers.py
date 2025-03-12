@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import User, Desafio,UsuarioDesafio, Publicacion, ComentarioPublicacion, FormularioFeedback, Snippet, FormularioContacto, RecursosDidacticos
+from .models import User, Desafio,UsuarioDesafio, Publicacion, Trofeo,ComentarioPublicacion, FormularioFeedback, Snippet, FormularioContacto, RecursosDidacticos
 import re
 import bleach
+from django.conf import settings
 
 class DesafioSerializer(serializers.ModelSerializer):
     liked_by_user = serializers.SerializerMethodField()
@@ -43,10 +44,58 @@ class DesafioSerializer(serializers.ModelSerializer):
         return value
 
 
+class TrofeoSerializer(serializers.ModelSerializer):
+    imagen_actual = serializers.SerializerMethodField()
+    imagen_bloqueada = serializers.SerializerMethodField()
+    imagen_desbloqueada = serializers.SerializerMethodField()
+
+    # Campo virtual para indicar si ESTE usuario lo tiene desbloqueado
+    desbloqueado_para_el_usuario = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Trofeo
+        fields = [
+            'id',
+            'nombre',
+            'descripcion',
+            'imagen_actual',
+            'imagen_bloqueada',
+            'imagen_desbloqueada',
+            'nivel_requerido',
+            'fecha_obtenido',
+            'desbloqueo_por_nivel',
+            'desbloqueado_para_el_usuario',  # <-- ¡nuevo!
+        ]
+
+    def get_imagen_actual(self, obj):
+        request = self.context.get('request')
+        imagen_url = obj.imagen_bloqueada.url if obj.imagen_bloqueada else None
+        return request.build_absolute_uri(imagen_url) if request and imagen_url else None
+
+    def get_imagen_bloqueada(self, obj):
+        request = self.context.get('request')
+        imagen_url = obj.imagen_bloqueada.url if obj.imagen_bloqueada else None
+        return request.build_absolute_uri(imagen_url) if request and imagen_url else None
+
+    def get_imagen_desbloqueada(self, obj):
+        request = self.context.get('request')
+        imagen_url = obj.imagen_desbloqueada.url if obj.imagen_desbloqueada else None
+        return request.build_absolute_uri(imagen_url) if request and imagen_url else None
+
+    def get_desbloqueado_para_el_usuario(self, obj):
+        """Devuelve True si el usuario actual está en el ManyToMany 'usuarios_desbloqueados'"""
+        user = self.context['request'].user
+        if not user.is_authenticated:
+            return False
+        
+        # Si el user aparece en la relación M2M, significa que tiene el trofeo
+        return obj.usuarios_desbloqueados.filter(id=user.id).exists()
+    
+
 class UserSerializer(serializers.ModelSerializer):
     points = serializers.IntegerField(source='profile.points', read_only=True)
     profile_image = serializers.URLField(source='profile.profile_image', required=False)
-    is2fa_enabled = serializers.BooleanField(source="profile.is2fa_enabled", read_only=True)  # 🔹 Agregar el campo
+    is2fa_enabled = serializers.BooleanField(source="profile.is2fa_enabled", read_only=True)  # Agregar el campo
 
 
     class Meta:

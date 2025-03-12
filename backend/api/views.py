@@ -26,17 +26,18 @@ import os
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
+from django.utils.timezone import now
 
 from .serializers import (
     DesafioSerializer, PublicacionSerializer, ComentarioPublicacionSerializer,
     FormularioFeedbackSerializer, SnippetSerializer, FormularioContactoSerializer,
-    RecursosDidacticosSerializer, UserSerializer, FormularioFeedbackSerializer
+    RecursosDidacticosSerializer, UserSerializer, FormularioFeedbackSerializer, TrofeoSerializer
 )
 
 from .models import (
     Desafio, Publicacion, ComentarioPublicacion, FormularioFeedback, 
     Snippet, FormularioContacto, RecursosDidacticos, Profile, FormularioFeedback,
-    UsuarioDesafio
+    UsuarioDesafio, Trofeo
 )
 
 from django.contrib.auth.hashers import check_password, make_password
@@ -132,36 +133,45 @@ class DesafioViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def verificar_respuesta(self, request, pk=None):
-        """ Verifica si la respuesta es correcta y suma puntos solo la primera vez """
         usuario = request.user
         desafio = self.get_object()
         respuesta_usuario = request.data.get("respuesta", "").strip().lower()
 
         if respuesta_usuario == desafio.solucion.strip().lower():
             # Verificar si el usuario ya resolvió el desafío
-            if not UsuarioDesafio.objects.filter(usuario=usuario, desafio=desafio).exists():
-                # Registrar el desafío como completado para el usuario
-                UsuarioDesafio.objects.create(usuario=usuario, desafio=desafio)
-
-                # Obtener el perfil del usuario
+            completado, creado = UsuarioDesafio.objects.get_or_create(usuario=usuario, desafio=desafio)
+            if creado:
+                # 1) Sumar puntos
                 profile, _ = Profile.objects.get_or_create(user=usuario)
-
-                # Sumar puntos
                 profile.points = F('points') + desafio.puntuacion
                 profile.save()
-                profile.refresh_from_db()  # Recargar para obtener los puntos actualizados
+                profile.refresh_from_db()
+
+                # 2) Desbloquear trofeos por DESAFÍO
+                #    (Solo si están en `desafio.trofeos_desbloqueables`)
+                for trofeo in desafio.trofeos_desbloqueables.all():
+                    if not trofeo.desbloqueo_por_nivel and not trofeo.desbloqueado:
+                        print(f"Intentando desbloquear trofeo: {trofeo.id} para {usuario.username}")
+                        trofeo.fecha_obtenido = now()
+                        trofeo.usuarios_desbloqueados.add(usuario)
+                        trofeo.save()
+                        print("Usuarios con este trofeo:", trofeo.usuarios_desbloqueados.all())
+                        print("Trofeo guardado:", trofeo.desbloqueado, "Usuarios con el trofeo:", trofeo.usuarios_desbloqueados.all())
+
+                # 3) Desbloquear trofeos por nivel
+                Trofeo.check_desafio_completados(usuario)
 
                 return Response({
                     "mensaje": "¡Correcto! Has resuelto el desafío.",
                     "solucionado": True,
                     "puntos": profile.points
-                }, status=status.HTTP_200_OK)
+                })
             else:
                 return Response({
                     "mensaje": "Ya has resuelto este desafío antes.",
                     "solucionado": True,
                     "puntos": usuario.profile.points
-                }, status=status.HTTP_200_OK)
+                })
         else:
             return Response({
                 "mensaje": "Incorrecto. Inténtalo de nuevo.",
@@ -169,8 +179,44 @@ class DesafioViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
+class TrofeosUsuarioView(APIView):
+    """
+    Vista para obtener todos los trofeos junto con la info del usuario.
+    El frontend decide si el trofeo está bloqueado o no.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        usuario = request.user
+        
+        # Obtener los puntos del usuario desde Profile
+        try:
+            profile = usuario.profile
+            puntos_usuario = profile.points
+        except Profile.DoesNotExist:
+            puntos_usuario = 0
+
+        # Opción A: Mostrar TODOS los trofeos de la base de datos
+        trofeos = Trofeo.objects.all()
+        
+        serializer = TrofeoSerializer(trofeos, many=True, context={'request': request})
+        
+        return Response({
+            "usuario": {
+                "username": usuario.username,
+                "puntos": puntos_usuario
+            },
+            "trofeos": serializer.data
+        })
 
 
+class DesbloquearTrofeoView(APIView):
+    """
+    Vista para manejar la asignación automática de trofeos al completar desafíos.
+    """
+    permission_classes = [IsAuthenticated]
+
+    
 
 class FormularioFeedbackViewSet(viewsets.ModelViewSet):
     queryset = FormularioFeedback.objects.all()
@@ -285,7 +331,7 @@ class PublicacionViewSet(viewsets.ModelViewSet):
         data = request.data.copy()
         data["usuario"] = usuario.id  # Se asegura de que el usuario autenticado es el creador
 
-        # 🔹 Si se proporciona un `desafio_id`, intenta asociarlo; de lo contrario, es `None`
+        # Si se proporciona un `desafio_id`, intenta asociarlo; de lo contrario, es `None`
         desafio_id = data.get("desafio_id")
         if desafio_id:
             desafio = get_object_or_404(Desafio, id=desafio_id)

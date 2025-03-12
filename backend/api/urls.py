@@ -7,7 +7,8 @@ from .views import (
     FormularioFeedbackViewSet, FormularioContactoViewSet,
     RecursosDidacticosViewSet, HomeDataView, UserDetailView, UserUpdateView,
     UserDeleteView, CustomAuthToken, ComentarioPublicacionViewSet, RegisterView, ChangePasswordView, ListarDesafiosView,
-    EliminarPublicacionAPIView,obtener_usuario,TwoFactorAuthView, Verify2FAView, enable_2fa, confirm_2fa, disable_2fa
+    EliminarPublicacionAPIView,obtener_usuario,TwoFactorAuthView,DesbloquearTrofeoView,
+    TrofeosUsuarioView , Verify2FAView, enable_2fa, confirm_2fa, disable_2fa
 )
 
 router = DefaultRouter()
@@ -35,7 +36,6 @@ urlpatterns = [
     path('blog/<int:publicacion_id>/comentarios/nuevo/', ComentarioPublicacionViewSet.as_view({'post': 'create'}), name='comentarios-publicacion-create'),
     path('blog/<int:publicacion_id>/eliminar/', EliminarPublicacionAPIView.as_view(), name='eliminar-publicacion'),
     path("usuario/", obtener_usuario, name="obtener_usuario"),
-    path("desafios/<int:pk>/", DesafioViewSet.as_view({'get': 'retrieve'}), name="detalle-desafio"),
     path("2fa/", TwoFactorAuthView.as_view(), name="two_factor_auth"),
     path("login/", TwoFactorAuthView.as_view(), name="login"),
     path("login/verify-otp/", Verify2FAView.as_view(), name="verify-otp"),
@@ -43,5 +43,7 @@ urlpatterns = [
     path("disable-2fa/", disable_2fa, name="disable_2fa"),
     path("verify-2fa/", Verify2FAView.as_view(), name="verify_2fa"),
     path("confirm-2fa/", confirm_2fa, name="confirm_2fa"),
+    path('trofeos/', TrofeosUsuarioView.as_view(), name='trofeos-usuario'),
+    path('desafios/<int:desafio_id>/desbloquear_trofeo/', DesbloquearTrofeoView.as_view(), name='desbloquear-trofeo'),
 ]
 

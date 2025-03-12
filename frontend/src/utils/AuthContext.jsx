@@ -73,11 +73,11 @@ export const AuthProvider = ({ children }) => {
         setRefreshToken(refresh);
 
         if (token) {
-            // Refrescar token cada 55 minutos
-            const refreshInterval = setInterval(refreshAccessToken, 55 * 60 * 1000);
+            // Refrescar token cada 10 minutos para el modo debug
+            const refreshInterval = setInterval(refreshAccessToken, 10 * 60 * 1000);
 
-            // Verificar token cada 30 segundos para evitar llamadas excesivas
-            const checkInterval = setInterval(checkTokenValidity, 30000);
+            // Verificar token cada 50 segundos para evitar llamadas excesivas
+            const checkInterval = setInterval(checkTokenValidity, 50000);
 
             return () => {
                 clearInterval(refreshInterval);
