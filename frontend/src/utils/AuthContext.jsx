@@ -1,26 +1,22 @@
 import { createContext, useState, useEffect } from "react";
 import axios from "axios";
-
 export const AuthContext = createContext();
-
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(null);
     const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken"));
     const [refreshToken, setRefreshToken] = useState(localStorage.getItem("refreshToken"));
 
-    // Función para refrescar el token de acceso
+    {/* Función para refrescar el token de acceso */}
     const refreshAccessToken = async () => {
         if (!refreshToken) {
             console.log("No hay refreshToken disponible.");
             logout();
             return;
         }
-
         try {
             const response = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
                 refresh: refreshToken,
             });
-
             if (response.status === 200) {
                 console.log("Token refrescado correctamente.");
                 localStorage.setItem("accessToken", response.data.access);
@@ -29,26 +25,22 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (error) {
             console.error("Error al refrescar el token:", error);
-            logout(); // Si falla el refresh, forzar logout
+            logout();
         }
     };
 
-    // Función para verificar si el token sigue siendo válido y si el usuario tiene perfil
+    {/*Función para verificar si el token sigue siendo válido y si el usuario tiene perfil*/}
     const checkTokenValidity = async () => {
         const token = localStorage.getItem("accessToken");
-
         if (!token) {
             console.log("Token no encontrado. Cerrando sesión.");
             logout();
             return;
         }
-
         try {
             const response = await axios.get("http://127.0.0.1:8000/api/user/", {
                 headers: { Authorization: `Bearer ${token}` },
             });
-
-            // Si el usuario tiene perfil y está autenticado, actualizar estado
             if (response.status === 200) {
                 setIsAuthenticated(true);
             }
@@ -62,7 +54,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Efecto para manejar la autenticación y verificar el token periódicamente
+    {/*manejo de la autenticación y verificar el token periódicamente*/}
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         const refresh = localStorage.getItem("refreshToken");
@@ -73,12 +65,8 @@ export const AuthProvider = ({ children }) => {
         setRefreshToken(refresh);
 
         if (token) {
-            // Refrescar token cada 10 minutos para el modo debug
-            const refreshInterval = setInterval(refreshAccessToken, 10 * 60 * 1000);
-
-            // Verificar token cada 50 segundos para evitar llamadas excesivas
-            const checkInterval = setInterval(checkTokenValidity, 50000);
-
+            const refreshInterval = setInterval(refreshAccessToken, 10 * 60 * 1000); // Refrescar token cada 10 minutos para el modo debug
+            const checkInterval = setInterval(checkTokenValidity, 50000); // Verificar token cada 50 segundos para evitar llamadas excesivas
             return () => {
                 clearInterval(refreshInterval);
                 clearInterval(checkInterval);
@@ -86,7 +74,7 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    // Función de inicio de sesión
+    {/*Función de inicio de sesión*/}
     const login = (token, refresh, is2FA = false) => {
         if (is2FA) {
             console.log("2FA habilitado. Esperando verificación antes de guardar el token.");
@@ -101,7 +89,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
     };
 
-    // Función de cierre de sesión
+    {/*Función de cierre de sesión*/}
     const logout = () => {
         console.log("Cerrando sesión...");
         localStorage.removeItem("accessToken");

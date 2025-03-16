@@ -6,8 +6,6 @@ const Trofeos = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [completedChallenges, setCompletedChallenges] = useState([]);
   const [previousUnlockedTrophies, setPreviousUnlockedTrophies] = useState(new Set());
-
-  // Función para calcular el nivel del usuario (Cada 10 puntos = 1 nivel)
   const calculateLevel = (points) => {
     return Math.floor(points / 10);
   };
@@ -61,12 +59,6 @@ const Trofeos = () => {
       .catch((error) => console.error(" Error al cargar los trofeos:", error));
   };
 
-
-
-  // ───────────────────────────────────────────────────────────
-  // NUEVA FUNCIÓN para verificar la respuesta de un desafío.
-  // No se modifica nada más del componente.
-  // ───────────────────────────────────────────────────────────
   const verificarRespuesta = async (desafioId, respuesta) => {
     const token = localStorage.getItem("accessToken");
   
@@ -89,7 +81,7 @@ const Trofeos = () => {
         toast.success(data.mensaje);
         if (data.puntos !== undefined) {
           setUserPoints(data.puntos);
-          cargarTrofeos(); // <-- Añade exactamente esto aquí
+          cargarTrofeos();
         }
       } else {
         toast.error(data.mensaje);
@@ -117,25 +109,19 @@ const Trofeos = () => {
       {trofeos.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mt-6">
           {trofeos.map((trofeo) => {
-            // Verificamos si el trofeo está desbloqueado según el backend
             const desbloqueado = trofeo.desbloqueado_para_el_usuario;
 
             console.log(
               `Trofeo: ${trofeo.nombre}, Nivel Requerido: ${trofeo.nivel_requerido}, Puntos Usuario: ${userPoints}, Desbloqueado: ${desbloqueado}`
             );
 
-            // Verificar si hay imagen desbloqueada o usar la bloqueada
-            const imagenUrl = desbloqueado
+            const imagenUrl = desbloqueado // Verificar si hay imagen desbloqueada o usar la bloqueada
               && trofeo.imagen_desbloqueada 
               && trofeo.imagen_desbloqueada.trim() !== ""
                 ? `${backendURL}${new URL(trofeo.imagen_desbloqueada, backendURL).pathname}`
               : !desbloqueado && trofeo.imagen_actual && trofeo.imagen_actual.trim() !== ""
                 ? `${backendURL}${new URL(trofeo.imagen_actual, backendURL).pathname}`
-                : "/fallback-image.png";
-          
-          
-          
-            // Evita definitivamente cadenas vacías
+                : "/fallback-image.png";          
             const imagenFinal = (imagenUrl && imagenUrl.trim()) ? imagenUrl : "/fallback-image.png";
           
             return (

@@ -3,13 +3,9 @@ import { Link } from "react-router-dom";
 export default function Politica() {
   return (
     <div className="w-screen min-h-screen flex flex-col bg-white text-black">
-      {/* Contenido Principal */}
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-[700px] text-center">
-          {/* Título */}
           <h1 className="text-3xl md:text-5xl font-bold">Política de Privacidad</h1>
-
-          {/* Contenido */}
           <div className="mt-6 text-lg md:text-xl space-y-4 text-left">
             <p>
               En <strong>Chees Script</strong>, tu privacidad es esencial. Trabajamos
@@ -53,8 +49,6 @@ export default function Politica() {
               .{" "}¡Estaremos encantados de ayudarte!
             </p>
           </div>
-
-          {/* Botón de regreso */}
           <div className="mt-8">
             <Link
               to="/"

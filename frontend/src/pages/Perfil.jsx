@@ -19,11 +19,7 @@ const Perfil = () => {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [errorPassword, setErrorPassword] = useState("");
     const [success, setSuccess] = useState("");
-
-
     const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-
-    // Estados para el cambio de contraseña
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,7 +27,6 @@ const Perfil = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [errorDelete, setErrorDelete] = useState("");
     
-
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         if (!token) {
@@ -39,10 +34,7 @@ const Perfil = () => {
             return;
         }
         fetchUserData(token);
-    }, []);  // <= dependencias vacías para ejecutar solo una vez al montar
-    
-    
-    
+    }, []);
 
     const fetchUserData = async (token) => {
         try {
@@ -54,7 +46,7 @@ const Perfil = () => {
                 username: response.data.username,
                 profileImage: response.data.profile_image || "",
                 favoriteChallenges: response.data.favoriteChallenges || "",
-                points: response.data.points || 0, // <-- Agregado
+                points: response.data.points || 0,
             });
             
             setOriginalUser({
@@ -79,21 +71,15 @@ const Perfil = () => {
         );
     }
     
-    
-// Cada 10 puntos aumenta 1 nivel, hasta nivel 100 al llegar a 1000 puntos.
-const calculateLevel = (points) => {
-    // Caso especial: 1000 o más => nivel 100
+    {/*Función para el calculo del nivel en funcion de los puntos*/}
+
+const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta nivel 100 al llegar a 1000 puntos.
     if (points >= 1000) {
       return { level: 100, progress: 100 };
     }
-  
-    // Nivel calculado con división entera
     const level = Math.floor(points / 10);
-    // Resto para la barra de progreso
-    const remainder = points % 10;
-    // Porcentaje de progreso entre un nivel y el siguiente
-    const progress = (remainder / 10) * 100;
-  
+    const remainder = points % 10;  // Resto para la barra de progreso
+    const progress = (remainder / 10) * 100; // Porcentaje de progreso entre un nivel y el siguiente
     return { level, progress };
   };
     

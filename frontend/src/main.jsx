@@ -29,6 +29,7 @@ const MainApp = () => {
             <AuthProvider>
                 <Navbar />
                 <Routes>
+
                     {/* Rutas Públicas */}
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
@@ -58,7 +59,6 @@ const MainApp = () => {
     );
 };
 
-// Renderizar la aplicación correctamente
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
         <MainApp />
