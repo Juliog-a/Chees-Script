@@ -27,6 +27,7 @@ const Perfil = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [errorDelete, setErrorDelete] = useState("");
     
+
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         if (!token) {
@@ -35,6 +36,7 @@ const Perfil = () => {
         }
         fetchUserData(token);
     }, []);
+
 
     const fetchUserData = async (token) => {
         try {
@@ -63,6 +65,7 @@ const Perfil = () => {
         }
     };
     
+
     if (loading) {
         return (
             <div className="w-screen min-h-screen flex items-center justify-center bg-white text-black mt-24">
@@ -236,8 +239,6 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
         }
     };
     
-    
-    
 
 
     if (loading) {
@@ -322,12 +323,6 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
                 <h2 className="text-3xl font-bold text-center text-gray-900"></h2>
                 <Trofeos />
 
-
-
-
-
-
-
                   {/* Modal para borrar cuenta */}
                   {showDeleteModal && (
                     <AccountDeleted
@@ -390,11 +385,7 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
 
             </div>
         </div>
-
-
-
     );    
-    
     
 }
 export default Perfil;

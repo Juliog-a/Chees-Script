@@ -48,8 +48,6 @@ class TrofeoSerializer(serializers.ModelSerializer):
     imagen_actual = serializers.SerializerMethodField()
     imagen_bloqueada = serializers.SerializerMethodField()
     imagen_desbloqueada = serializers.SerializerMethodField()
-
-    # Campo virtual para indicar si ESTE usuario lo tiene desbloqueado
     desbloqueado_para_el_usuario = serializers.SerializerMethodField()
 
     class Meta:
@@ -128,7 +126,7 @@ class PublicacionSerializer(serializers.ModelSerializer):
     usuario_nombre = serializers.CharField(source="usuario.username", read_only=True)  # Obtener el nombre del usuario
     liked_by_user = serializers.SerializerMethodField()  # Verifica si el usuario autenticado ha dado like
     likes_count = serializers.IntegerField(source="likes.count", read_only=True)  # Número total de likes
-    comentarios = ComentarioPublicacionSerializer(many=True, read_only=True)  # INCLUIR COMENTARIOS EN LA RESPUESTA
+    comentarios = ComentarioPublicacionSerializer(many=True, read_only=True)
 
     url_imagen = serializers.CharField(
         max_length=256, 
@@ -147,13 +145,12 @@ class PublicacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publicacion
         fields = ['id', 'titulo', 'contenido', 'fecha_creacion', 'url_imagen', 'likes_count', 
-                  'liked_by_user', 'usuario_nombre', 'usuario', 'comentarios']  # Se incluyó `comentarios`
+                  'liked_by_user', 'usuario_nombre', 'usuario', 'comentarios']
 
     def validate_contenido(self, value):
         """ Validar que el contenido no supere 200 caracteres """
         if len(value) > 200:
             raise serializers.ValidationError("El contenido no puede tener más de 200 caracteres.")
-
         # Sanitiza la entrada con bleach para evitar XSS
         value = bleach.clean(value)
         return value
@@ -166,7 +163,6 @@ class PublicacionSerializer(serializers.ModelSerializer):
             regex = r"^https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg)$"
             if not re.match(regex, value, re.IGNORECASE):
                 raise serializers.ValidationError("La URL debe ser una imagen válida (png, jpg, jpeg, gif, bmp, webp, svg).")
-
             # Prevenir URLs sospechosas (evitar inyecciones)
             if "javascript:" in value or "data:" in value:
                 raise serializers.ValidationError("URL inválida por razones de seguridad.")
@@ -199,7 +195,6 @@ class FormularioFeedbackSerializer(serializers.ModelSerializer):
         """ Evita que se inyecten scripts maliciosos en el código enviado """
         if "<script>" in value or "</script>" in value:
             raise serializers.ValidationError("El código no puede contener scripts.")
-        
         # Escapa caracteres peligrosos usando bleach
         value = bleach.clean(value)
         return value

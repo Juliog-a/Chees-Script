@@ -61,7 +61,7 @@ class Desafio(models.Model):
         blank=True,
         null=True
     )  # Tipo de cifrado aplicado al texto
-    solucion = models.CharField(max_length=256, blank=True, null=True)  # Respuesta correcta
+    solucion = models.CharField(max_length=256, blank=True, null=True)
 
     def completar_desafio(self, user):
         """
@@ -71,9 +71,6 @@ class Desafio(models.Model):
             UsuarioDesafio.objects.create(usuario=user, desafio=self)
             Profile.objects.filter(user=user).update(points=models.F('points') + self.puntuacion)
             Trofeo.check_desafio_completados(user)
-
-
-        # Verificar si el usuario ha desbloqueado un trofeo por completar un número específico de desafíos
         Trofeo.check_desafio_completados(user)
 
     def __str__(self):
@@ -99,16 +96,16 @@ class Trofeo(models.Model):
     def check_desafio_completados(user):
         profile, _ = Profile.objects.get_or_create(user=user)
         user_points = profile.points
-        user_level = user_points // 10  # Cada 10 puntos = 1 nivel claramente aquí
+        user_level = user_points // 10  # Cada 10 puntos = 1 nivel
 
         desafios_completados_ids = UsuarioDesafio.objects.filter(
             usuario=user
         ).values_list('desafio_id', flat=True)
 
-        # 1) Desbloquear claramente por nivel (nivel del usuario)
+        # 1) Desbloquear por nivel
         trofeos_por_nivel = Trofeo.objects.filter(
             desbloqueo_por_nivel=True,
-            nivel_requerido__lte=user_level  # Ahora sí, por nivel correcto!
+            nivel_requerido__lte=user_level
         ).exclude(usuarios_desbloqueados=user)
 
         for trofeo in trofeos_por_nivel:
@@ -126,8 +123,6 @@ class Trofeo(models.Model):
             trofeo.usuarios_desbloqueados.add(user)
             trofeo.fecha_obtenido = now()
             trofeo.save()
-
-
 
     def __str__(self):
         return self.nombre
@@ -208,7 +203,7 @@ class Publicacion(models.Model):
         return self.titulo
 
 class ComentarioPublicacion(models.Model):
-    contenido = models.TextField(max_length=100)  #Se limita a 120 caracteres
+    contenido = models.TextField(max_length=100)  #Se limita a 100 caracteres
     fecha_publicacion = models.DateTimeField(auto_now_add=True)
     autor = models.CharField(max_length=64)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)

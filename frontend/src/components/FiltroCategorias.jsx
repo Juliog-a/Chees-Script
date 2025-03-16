@@ -19,8 +19,6 @@ const FiltroCategorias = ({
 
     return (
 <div className="w-full flex flex-col md:flex-row items-center justify-center md:justify-around mb-6 flex-wrap gap-x-4">
-            
-            {/* Filtro por dificultad*/}
             <div className="flex flex-wrap gap-4">
                 {dificultades.map((nivel) => (
                     <button
@@ -34,10 +32,7 @@ const FiltroCategorias = ({
                     </button>
                 ))}
             </div>
-
-            {/*Botones "Favoritos" y "Filtrar por temática" */}
             <div className="flex gap-4">
-                {/* Botón "Favoritos" */}
                 <button
                     onClick={() => setMostrarFavoritos(!mostrarFavoritos)}
                     className={`px-4 py-2 rounded-md font-semibold transition ${
@@ -46,8 +41,6 @@ const FiltroCategorias = ({
                 >
                     ❤️ Favoritos
                 </button>
-
-                {/* Botón "Filtrar por Temática" */}
                 <div className="relative">
                     <button 
                         onClick={() => setMostrarTematicas(!mostrarTematicas)} 

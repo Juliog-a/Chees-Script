@@ -15,18 +15,12 @@ const Navbar = () => {
         }
     }, [isAuthenticated]);
 
-// Cada 10 puntos aumenta 1 nivel, hasta nivel 100 al llegar a 1000 puntos.
 const calculateLevel = (points) => {
-    // Caso especial: 1000 o más => nivel 100
     if (points >= 1000) {
       return { level: 100, progress: 100 };
     }
-  
-    // Nivel calculado con división entera
-    const level = Math.floor(points / 10);
-    // Resto para la barra de progreso
+      const level = Math.floor(points / 10);
     const remainder = points % 10;
-    // Porcentaje de progreso entre un nivel y el siguiente
     const progress = (remainder / 10) * 100;
   
     return { level, progress };
@@ -40,13 +34,13 @@ const calculateLevel = (points) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
     
-            console.log("Datos del usuario:", response.data); // Verifica los puntos
+            console.log("Datos del usuario:", response.data); 
     
-            const { level } = calculateLevel(response.data.points || 0); // Calcula nivel desde los puntos
+            const { level } = calculateLevel(response.data.points || 0); 
     
             setUserData({
                 profileImage: response.data.profile_image || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                level: level, // Usamos el nivel calculado correctamente
+                level: level, 
             });
         } catch (error) {
             console.error("Error al obtener los datos del usuario:", error);
@@ -62,12 +56,10 @@ const calculateLevel = (points) => {
 
     return (
     <nav className="w-full max-w-screen bg-black text-white py-4 px-6 flex items-center justify-between shadow-md fixed top-0 left-0 z-50 overflow-hidden">
-{/* Logo */}
             <Link to="/" className="flex items-center">
                 <img src={logo} alt="Chees Script" className="h-12 cursor-pointer" />
             </Link>
 
-            {/* Links de navegación */}
             <div className="flex space-x-4 items-center">
                 {!isAuthenticated ? (
                     <>
@@ -95,8 +87,6 @@ const calculateLevel = (points) => {
                         <Link to="/perfil" className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
                             Perfil
                         </Link>
-
-                        {/* Imagen de perfil y nivel */}
                         <div className="flex items-center space-x-2 bg-gray-900 px-3 py-1 rounded-lg">
                             <img
                                 src={userData.profileImage}
@@ -105,8 +95,6 @@ const calculateLevel = (points) => {
                             />
                             <span className="text-sm font-semibold">Nivel {userData.level}</span>
                         </div>
-
-                        {/* Botón de Cerrar Sesión */}
                         <button onClick={handleLogout} className="bg-red-500 px-4 py-2 rounded-lg text-white font-bold hover:bg-red-400 transition">
                             Cerrar sesión
                         </button>

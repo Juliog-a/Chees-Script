@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function FormularioContacto() {
-  const navigate = useNavigate(); // ✅ Definimos navigate para redireccionar si no hay token
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -15,7 +15,7 @@ export default function FormularioContacto() {
   const [captchaPregunta, setCaptchaPregunta] = useState("");
   const [captchaRespuesta, setCaptchaRespuesta] = useState(null);
 
-  // ✅ Generar captcha al cargar el componente
+
   useEffect(() => {
     generarCaptcha();
     
@@ -25,7 +25,6 @@ export default function FormularioContacto() {
       return;
     }
 
-    // ✅ Validar autenticación del usuario
     fetch("http://localhost:8000/api/user/", {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -39,7 +38,6 @@ export default function FormularioContacto() {
       });
   }, []);
 
-  // ✅ Obtener trofeos al cargar el componente
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {

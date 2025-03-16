@@ -4,23 +4,17 @@ const Footer = () => {
   return (
     <footer className="bg-black text-white py-6 mt-10">
       <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between px-6 text-center md:text-left">
-        
-        {/* Información de Chees Script */}
         <div>
           <h3 className="text-xl font-bold">Chees Script</h3>
           <p className="text-sm mt-1">
             Diviertete aprendiendo.
           </p>
         </div>
-
-        {/* Contacto */}
         <div className="mt-4 md:mt-0">
           <h4 className="text-lg font-semibold">Contacto</h4>
           <p className="text-sm">📧 cheesscript@gmail.com</p>
           <p className="text-sm">📍 Sevilla, España</p>
         </div>
-
-        {/* Enlaces legales */}
         <div className="mt-4 md:mt-0">
           <h4 className="text-lg font-semibold">Información</h4>
           <Link to="/terminos" className="text-yellow-400 hover:underline text-sm block">

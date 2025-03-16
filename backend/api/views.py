@@ -27,6 +27,10 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now
+from defender.decorators import watch_login
+from django.contrib.auth.hashers import check_password, make_password
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 from .serializers import (
     DesafioSerializer, PublicacionSerializer, ComentarioPublicacionSerializer,
@@ -40,7 +44,6 @@ from .models import (
     UsuarioDesafio, Trofeo
 )
 
-from django.contrib.auth.hashers import check_password, make_password
 
 logger = logging.getLogger(__name__)  
 
@@ -146,15 +149,11 @@ class DesafioViewSet(viewsets.ModelViewSet):
                 profile.save()
                 profile.refresh_from_db()
                 print("Puntos actuales tras actualización:", profile.points)
-
-                # Desbloquear trofeos específicos del desafío
                 for trofeo in desafio.trofeos_desbloqueables.all():
                     if usuario not in trofeo.usuarios_desbloqueados.all():
                         trofeo.fecha_obtenido = now()
                         trofeo.usuarios_desbloqueados.add(usuario)
                         trofeo.save()
-
-                # Verificar si debe desbloquear trofeos por nivel o desafíos
                 Trofeo.check_desafio_completados(usuario)
 
                 return Response({
@@ -186,11 +185,7 @@ class TrofeosUsuarioView(APIView):
             puntos_usuario = profile.points
         except Profile.DoesNotExist:
             puntos_usuario = 0
-
-        # ───────── AÑADE ESTA LÍNEA CLARAMENTE AQUÍ ────────────
         Trofeo.check_desafio_completados(usuario)
-        # ───────────────────────────────────────────────────────
-
         trofeos = Trofeo.objects.all()
         serializer = TrofeoSerializer(trofeos, many=True, context={'request': request})
         
@@ -217,7 +212,7 @@ class FormularioFeedbackViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        print("Datos recibidos en el request:", request.data)  # Para Depuración
+        print("Datos recibidos en el request:", request.data)
 
         usuario_id = request.data.get("usuario_id") 
         desafio_id = request.data.get("desafio_id")
@@ -236,7 +231,7 @@ class FormularioFeedbackViewSet(viewsets.ModelViewSet):
             serializer.save(usuario=usuario, desafio=desafio)  
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            print("Error en validación:", serializer.errors)  # Mostrar errores en consola
+            print("Error en validación:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -270,16 +265,7 @@ class RecursosDidacticosViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
-
-
-
-
-
-
 #VIEWS RELACIONADOS CON EL BLOG:
-
-
 
 class BajaFrecuenciaThrottle(UserRateThrottle):
     rate = '5/min'
@@ -439,6 +425,7 @@ class FormularioContactoViewSet(viewsets.ModelViewSet):
 class CustomAuthToken(APIView):
     permission_classes = [AllowAny]
 
+    @watch_login  # Django-Defender protege esta vista
     def post(self, request):
         username_or_email = request.data.get("username")
         password = request.data.get("password")
@@ -446,34 +433,25 @@ class CustomAuthToken(APIView):
         if not username_or_email or not password:
             return Response({"error": "Faltan datos."}, status=status.HTTP_400_BAD_REQUEST)
 
-        cache_key = f"failed_attempts_{username_or_email}"
-        failed_attempts = cache.get(cache_key, 0)
-
-        if failed_attempts >= 5:
-            return Response({"error": "Demasiados intentos fallidos. Intenta más tarde."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
-
+        # Autenticación con email o username
         user = None
         if "@" in username_or_email:
             try:
                 user = User.objects.get(email=username_or_email)
+                user = authenticate(username=user.username, password=password)
             except User.DoesNotExist:
-                cache.set(cache_key, failed_attempts + 1, timeout=300)  # Bloqueo por 5 minutos
                 return Response({"error": "Usuario no encontrado."}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             user = authenticate(username=username_or_email, password=password)
 
         if user is not None:
-            cache.delete(cache_key)  # Restablecer intentos fallidos
             refresh = RefreshToken.for_user(user)
             return Response({
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
             })
-        
-        cache.set(cache_key, failed_attempts + 1, timeout=300)
+
         return Response({"error": "Credenciales incorrectas"}, status=status.HTTP_401_UNAUTHORIZED)
-
-
 
 class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
@@ -528,16 +506,12 @@ class UserUpdateView(APIView):
                 return Response({"error": "Las nuevas contraseñas no coinciden."}, status=status.HTTP_400_BAD_REQUEST)
 
             user.set_password(new_password)
-
         # Actualización de la imagen de perfil
         if "profile_image" in data:
             if data["profile_image"].strip():
                 user.profile.profile_image = data["profile_image"]
                 user.profile.save(update_fields=['profile_image'])
-
-        # Guardar cambios en el usuario
-        user.save()
-
+        user.save() # Guardar cambios en el usuario
         return Response({
             "message": "Perfil actualizado correctamente.",
             "profile_image": user.profile.profile_image
@@ -745,7 +719,7 @@ def enable_2fa(request):
 
 # Función para confirmar el código OTP e indicar que 2FA está activado
 
-@csrf_exempt  # Desactiva CSRF para pruebas
+@csrf_exempt
 @api_view(["POST"])  # Define el método POST permitido
 @authentication_classes([JWTAuthentication])  # Usa JWT para autenticación
 @permission_classes([IsAuthenticated])  # Asegura que el usuario está autenticado
@@ -818,13 +792,10 @@ def disable_2fa(request):
         send_mail(
             "2FA desactivado en Cheese Script",
             "Has desactivado la autenticación en dos pasos (2FA). Si no fuiste tú, cambia tu contraseña inmediatamente.",
-            settings.EMAIL_HOST_USER,  # Ahora usa settings correctamente
+            settings.EMAIL_HOST_USER,
             [request.user.email],
             fail_silently=True,
         )
-
-
         return Response({"status": "success", "message": "2FA desactivado correctamente y notificación enviada."}, status=200)
-
     except Exception as e:
         return Response({"error": str(e)}, status=500)

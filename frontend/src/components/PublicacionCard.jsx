@@ -11,12 +11,8 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
 
     const maxCaracteres = 100;
     const token = localStorage.getItem("accessToken");
-
-    //Obtener datos del usuario autenticado + comentarios al cargar el componente
     useEffect(() => {
         if (!token) return;
-
-        //Obtener datos del usuario autenticado
         axios.get("http://127.0.0.1:8000/api/usuario/", {
             headers: { Authorization: `Bearer ${token}` },
         })
@@ -26,27 +22,21 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
             setEsAdmin(usuario.is_staff || usuario.is_superuser);
         })
         .catch(error => console.error("Error al obtener datos del usuario:", error));
-
-        //Obtener comentarios de la publicación
         obtenerComentarios();
 
-    }, [publicacion.id, token]);  // Se ejecuta cuando cambia el ID de la publicación o el token
-
-    //Función para obtener comentarios
+    }, [publicacion.id, token]);
     const obtenerComentarios = () => {
-        if (!token) return;  // Evita hacer la petición si no hay token
+        if (!token) return; 
     
         axios.get(`http://127.0.0.1:8000/api/blog/${publicacion.id}/comentarios/`, {
-            headers: { Authorization: `Bearer ${token}` }  //Añadir autenticación
+            headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {
-            setComentarios(response.data);  //Guardar comentarios obtenidos
+            setComentarios(response.data);
         })
         .catch(error => console.error("Error al obtener los comentarios:", error));
     };
-    
-    //Función para dar/quitar "Me gusta"
-    const toggleLike = async () => {
+        const toggleLike = async () => {
         if (!token) return;
 
         try {
@@ -63,7 +53,6 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
         }
     };
 
-    //Función para enviar un comentario
     const enviarComentario = async () => {
         if (!nuevoComentario.trim() || !token) return;
     
@@ -74,16 +63,13 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
     
-            setNuevoComentario("");  //Limpiar textarea
-            setComentarios(prevComentarios => [...prevComentarios, response.data]); // Añadir nuevo comentario al estado
+            setNuevoComentario("");
+            setComentarios(prevComentarios => [...prevComentarios, response.data]);
         } catch (error) {
             console.error("Error al enviar comentario:", error);
         }
     };
-    
-    
 
-    //Función para eliminar una publicación
     const eliminarPublicacion = async () => {
         if (!token) return;
 
@@ -96,7 +82,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             window.location.reload();
-            recargarPublicaciones();  //Recargar publicaciones tras eliminar
+            recargarPublicaciones();
         } catch (error) {
             console.error("Error al eliminar publicación:", error);
         }
@@ -122,8 +108,6 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                 </button>
                 <span className="text-lg font-bold">{likesCount} Likes</span>
             </div>
-
-            {/*Botón de eliminación solo si el usuario tiene permisos */}
             {(esPropietario || esAdmin) && (
                 <button 
                     onClick={eliminarPublicacion} 
@@ -134,7 +118,6 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                 </button>
             )}
 
-            {/* Contenedor con scroll para los comentarios */}
             <div className="mt-4 flex flex-col">
                 <h3 className="font-semibold">Comentarios:</h3>
                 <div className="overflow-y-auto max-h-32 pr-2 bg-yellow-200 border border-yellow-400 rounded-md p-2" 
@@ -150,8 +133,6 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     )}
                 </div>
             </div>
-
-            {/* Campo de texto y botón de comentar */}
             <div className="mt-auto">
                 <div className="text-right text-gray-500 text-sm">
                     {nuevoComentario.length}/{maxCaracteres}

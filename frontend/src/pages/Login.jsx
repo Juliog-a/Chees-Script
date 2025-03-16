@@ -28,11 +28,10 @@ const Login = () => {
         e.preventDefault();
         setError(null);
         setSuccess(null);
-
+    
         try {
             const response = await axios.post("http://127.0.0.1:8000/api/login/", { username, password });
-
-            // Si requiere 2FA, guarda temporalmente los datos necesarios
+    
             if (response.data["2fa_required"]) {
                 setStep("2fa");
                 sessionStorage.setItem("tempToken", response.data.temp_token);
@@ -40,21 +39,23 @@ const Login = () => {
                 setSuccess("Introduce el código 2FA");
                 return;
             }
-
-            // Si no requiere 2FA, guardar tokens, actualizar contexto y redirigir
+    
             localStorage.setItem("accessToken", response.data.access);
             localStorage.setItem("refreshToken", response.data.refresh);
             login(response.data.access, response.data.refresh, false);
-
+    
             setSuccess("Login exitoso. Redirigiendo...");
             setTimeout(() => navigate("/perfil"), 1000);
-
+    
         } catch (error) {
-            setError(error.response?.data?.error || "Credenciales incorrectas");
+            if (error.response?.status === 429) {
+                setError("Demasiados intentos fallidos. Inténtalo más tarde.");
+            } else {
+                setError(error.response?.data?.error || "Credenciales incorrectas");
+            }
         }
     };
-
-    // Manejar envío del formulario OTP
+    
     const handleVerifyOTP = async (e) => {
         e.preventDefault();
         setError(null);

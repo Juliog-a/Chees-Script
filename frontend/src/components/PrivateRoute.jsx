@@ -8,7 +8,7 @@ const PrivateRoute = () => {
     console.log("PrivateRoute - Estado de autenticación:", isAuthenticated);
 
     if (isAuthenticated === null) {
-        return null; // No renderiza nada hasta que se determine la autenticación
+        return null;
     }
 
     return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;

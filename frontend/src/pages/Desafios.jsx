@@ -26,7 +26,7 @@ export default function Desafios() {
 
     useEffect(() => {
         cargarDesafios();
-    }, [mostrarFavoritos]);  // Se actualiza cada vez que se pulsa el filtro de favoritos
+    }, [mostrarFavoritos]);
 
     return (
         <div className="w-screen min-h-screen flex flex-col bg-white text-black p-6 overflow-x-hidden" style={{ paddingLeft: "5px" }}>

@@ -23,7 +23,7 @@ const Trofeos = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Datos recibidos actualizados:", data); // Verifica esta línea
+        console.log("Datos recibidos actualizados:", data);
   
         const userPoints = data.usuario?.puntos || 0;
   
@@ -115,7 +115,7 @@ const Trofeos = () => {
               `Trofeo: ${trofeo.nombre}, Nivel Requerido: ${trofeo.nivel_requerido}, Puntos Usuario: ${userPoints}, Desbloqueado: ${desbloqueado}`
             );
 
-            const imagenUrl = desbloqueado // Verificar si hay imagen desbloqueada o usar la bloqueada
+            const imagenUrl = desbloqueado
               && trofeo.imagen_desbloqueada 
               && trofeo.imagen_desbloqueada.trim() !== ""
                 ? `${backendURL}${new URL(trofeo.imagen_desbloqueada, backendURL).pathname}`

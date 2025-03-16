@@ -36,7 +36,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',  # Output in JSON
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # Asegúrate de que la autenticación sea obligatoria
+        'rest_framework.permissions.IsAuthenticated',  # Asegúrarnos de que la autenticación sea obligatoria
     ]
 }
 
@@ -45,8 +45,6 @@ AUTHENTICATION_BACKENDS = [
     'api.backends.CustomUserAuthBackend',  # Habilita login con email o username
     'django.contrib.auth.backends.ModelBackend',  # Necesario para Django Admin
 ]
-
-
 
 
 # Template configuration
@@ -94,12 +92,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api',
+    'defender',
     'tailwind',
     'django_otp',
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_static',
     #'two_factor', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
-    'rest_framework_simplejwt.token_blacklist',  # <-- Asegúrate de que está activado
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -111,8 +110,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'django_otp.middleware.OTPMiddleware',
+    #'django_otp.middleware.OTPMiddleware', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
     'csp.middleware.CSPMiddleware',
+    'defender.middleware.FailedLoginMiddleware',
 ]
 
 if not DEBUG:
@@ -121,42 +121,6 @@ if not DEBUG:
 else:
     SECURE_SSL_REDIRECT = False
     SECURE_HSTS_SECONDS = 0  # No activarlo en desarrollo
-
-# CSP (Content Security Policy) -> Para mitigar ataques XSS.
-# CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
-CSP_DEFAULT_SRC = ("'self'",)  # Solo permite recursos del mismo dominio
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'") if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")
-# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
-
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")  
-# Tailwind usa estilos inline, por eso permitimos 'unsafe-inline'
-
-CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")  
-# Para cargar fuentes desde Google Fonts
-
-CSP_IMG_SRC = ("'self'", "data:", "blob:")  
-# Permitir imágenes en base64 y blobs
-
-CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "ws://localhost:8000", "http://127.0.0.1:8000", "http://127.0.0.1:5173")
-
-# Permite llamadas a APIs externas (ajusta según tu backend)
-
-CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  
-# Para permitir iframes de videos embebidos
-
-CSP_OBJECT_SRC = ("'none'",)  
-# Bloquea Flash y otros objetos inseguros
-
-CSP_FORM_ACTION = ("'self'",)  
-# Evita envíos de formularios a dominios externos
-
-CSP_WORKER_SRC = ("'self'", "blob:")  
-# Permite Web Workers y Service Workers (importante para PWA)
-
-CSP_MANIFEST_SRC = ("'self'",)  
-# Permite cargar manifest.json en React PWA
-
-
 
 # URLs configuration
 ROOT_URLCONF = 'backend.urls'
@@ -199,18 +163,16 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS configuration
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Adjust to your frontend URL
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ]
-CORS_ALLOW_ALL_ORIGINS = True  # Solo para depuración, no en producción
+CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000"]
 
 CORS_ALLOW_METHODS = [
@@ -238,3 +200,42 @@ X_FRAME_OPTIONS = 'DENY'  # Evita que la página se cargue en iframes (Clickjack
 
 SECURE_REFERRER_POLICY = "same-origin"  # Evita que el navegador envíe referrers a sitios externos
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies reversos (NGINX)
+
+
+# Configuración de Django Defender
+DEFENDER_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")  # URL de Redis
+DEFENDER_LOCKOUT_URL = "/locked/"  # Página a la que se redirige al usuario bloqueado
+DEFENDER_USERNAME_FORM_FIELD = "username"  # Campo usado para autenticación
+DEFENDER_ENABLE_COOLOFF = True  # Habilitar tiempo de espera tras intentos fallidos
+DEFENDER_COOLOFF_TIME = 300  # Tiempo de espera en segundos (5 minutos)
+DEFENDER_LOGIN_FAILURE_LIMIT = 5  # Número de intentos antes del bloqueo
+DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"  # Plantilla personalizada de bloqueo
+DEFENDER_USE_CELERY = False  # Desactivar Celery si no lo usas
+DEFENDER_REDIS_PREFIX = "defender"  # Prefijo para claves en Redis
+
+# Si no usas Redis, puedes almacenar los intentos fallidos en la base de datos:
+DEFENDER_STORE_ACCESS_ATTEMPTS = True  # Guarda intentos fallidos en la base de datos
+
+# CSP (Content Security Policy) -> Para mitigar ataques XSS.
+# CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
+CSP_DEFAULT_SRC = ("'self'",)  # Solo permite recursos del mismo dominio
+
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'") if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
+
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")  # Tailwind usa estilos inline, por eso permitimos 'unsafe-inline'
+
+CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")  # Para cargar fuentes desde Google Fonts
+
+CSP_IMG_SRC = ("'self'", "data:", "blob:")  # Permitir imágenes en base64 y blobs
+
+CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "ws://localhost:8000", "http://127.0.0.1:8000", "http://127.0.0.1:5173") # Permite llamadas a APIs externas (ajusta según tu backend)
+
+CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  # Para permitir iframes de videos embebidos
+
+CSP_OBJECT_SRC = ("'none'",)  # Bloquea Flash y otros objetos inseguros
+
+CSP_FORM_ACTION = ("'self'",)  # Evita envíos de formularios a dominios externos
+
+CSP_WORKER_SRC = ("'self'", "blob:")  # Permite Web Workers y Service Workers (importante para PWA)
+
+CSP_MANIFEST_SRC = ("'self'",)  # Permite cargar manifest.json en React PWA

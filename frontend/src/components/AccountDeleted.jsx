@@ -23,11 +23,10 @@ const AccountDeleted = ({ onConfirm }) => {
     
                 if (response.ok) {
                     console.log("Cuenta eliminada correctamente");
-                    // Elimina los tokens antes de recargar la página
                     localStorage.removeItem("accessToken");
-                    localStorage.removeItem("refreshToken"); // Asegura que el refresh token también se borre
+                    localStorage.removeItem("refreshToken");
                     onConfirm(true);
-                    window.location.href = "/login"; // Redirige a login en lugar de recargar
+                    window.location.href = "/login"; 
                 } else {
                     console.error("Error al eliminar cuenta:", await response.json());
                     setError("Error al eliminar la cuenta.");

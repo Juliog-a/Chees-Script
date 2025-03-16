@@ -30,8 +30,6 @@ export default function Blog() {
     useEffect(() => {
         cargarPublicaciones();
     }, []);
-
-    // Función para validar URL de imagen en el frontend
     const validarURLImagen = (url) => {
         const regex = /^https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg)$/i;
         return regex.test(url);
@@ -67,11 +65,11 @@ export default function Blog() {
             setTitulo("");
             setContenido("");
             setImagen("");
-            setErrorImagen(""); // Limpiamos error de imagen tras una publicación exitosa
+            setErrorImagen("");
         } catch (error) {
             console.error("Error al publicar:", error.response?.data || error);
             if (error.response?.data?.url_imagen) {
-                setErrorImagen(error.response.data.url_imagen[0]); // Guardamos mensaje de error de la API
+                setErrorImagen(error.response.data.url_imagen[0]); 
             } else {
                 setError("Hubo un problema al publicar.");
             }
@@ -82,16 +80,12 @@ export default function Blog() {
         <div className="w-screen min-h-screen flex flex-col bg-white text-black p-6 overflow-x-hidden">
             <h1 className="text-3xl md:text-5xl font-bold text-center mb-8">Blog</h1>
             {error && <p className="text-red-600 text-center">{error}</p>}
-    
-            {/* Botón para abrir el formulario */}
-            <button 
+                <button 
                 onClick={() => setMostrarFormulario(true)} 
                 className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-900 transition mx-auto mb-6 shadow-md">
                 Crear Publicación
             </button>
-    
-            {/* Formulario de creación */}
-            {mostrarFormulario && (
+                {mostrarFormulario && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white p-6 rounded-md shadow-lg text-center w-96">
                         <h2 className="text-xl font-bold mb-4">Crear Publicación</h2>
@@ -121,11 +115,11 @@ export default function Blog() {
                             value={imagen} 
                             onChange={(e) => {
                                 setImagen(e.target.value);
-                                setErrorImagen(""); // Borramos el error cuando el usuario edita el input
+                                setErrorImagen("");
                             }}
                             className={`w-full p-2 border mt-2 rounded-md ${errorImagen ? "border-red-500" : "border-gray-300"}`} 
                         />
-                        {errorImagen && <p className="text-red-600 text-sm mt-1">{errorImagen}</p>} {/* Mostramos error si hay */}
+                        {errorImagen && <p className="text-red-600 text-sm mt-1">{errorImagen}</p>}
     
                         <div className="flex justify-between mt-4">
                             <button 
@@ -142,14 +136,12 @@ export default function Blog() {
                     </div>
                 </div>
             )}
-    
-            {/* Lista de Publicaciones */}
             <div className="grid justify-center"
                 style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
                     gap: "40px",
-                    alignItems: "start" // Evita que las tarjetas se monten entre sí
+                    alignItems: "start"
                 }}
             >
 

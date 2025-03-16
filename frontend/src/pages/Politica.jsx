@@ -12,34 +12,29 @@ export default function Politica() {
               continuamente para proteger tu información y fomentar un uso responsable
               de nuestros servicios.
             </p>
-
             <p>
               🔍 <strong>Recopilación de datos:</strong> Solo solicitamos la
               información estrictamente necesaria para mejorar tu experiencia y
               brindarte todas las funciones que ofrecemos.
             </p>
-
             <p>
               🔒 <strong>Uso de datos:</strong> Tus datos personales nunca se
               compartirán con terceros sin tu autorización explícita. Todo lo que
               nos facilitas se almacena de forma segura y cifrada.
             </p>
-
             <p>
               🍪 <strong>Cookies:</strong> Empleamos cookies para optimizar tu
               navegación y personalizar tu experiencia en la plataforma. Puedes
               rechazarlas o gestionarlas en cualquier momento, sin que eso afecte
               tu acceso a las funcionalidades de <strong>Chees Script</strong>.
             </p>
-
             <p>
               🛡️ <strong>Seguridad:</strong> Implementamos protocolos
               robustos de protección y cifrado para salvaguardar tu información.
               Nuestro objetivo es que disfrutes de una experiencia segura y confiable.
             </p>
-
             <p>
-              📩 <strong>7. Contacto:</strong> Si tienes dudas, preguntas o
+              📩 <strong>Contacto:</strong> Si tienes dudas, preguntas o
               sugerencias sobre estos Términos y Condiciones, escríbenos a{" "}
               <span className="font-semibold">cheesscript@gmail.com</span> o accede a
               nuestro apartado de   {" "}            

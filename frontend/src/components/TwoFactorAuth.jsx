@@ -8,10 +8,8 @@ const TwoFactorAuth = () => {
     const token = localStorage.getItem("accessToken");
 
     useEffect(() => {
-        check2FAStatus(); // Consultar estado 2FA desde la API
+        check2FAStatus(); 
     }, []);
-
-    // Verificar si el usuario tiene 2FA activado en la base de datos
     const check2FAStatus = async () => {
         try {
             const response = await fetch("http://127.0.0.1:8000/api/user/", {
@@ -24,7 +22,7 @@ const TwoFactorAuth = () => {
 
             const data = await response.json();
             if (response.ok) {
-                setIs2FAEnabled(data.is2fa_enabled); // Persistencia: Guardar estado real desde la BBDD
+                setIs2FAEnabled(data.is2fa_enabled); 
             }
         } catch (error) {
             console.error("Error al consultar estado 2FA:", error.message);
@@ -33,7 +31,6 @@ const TwoFactorAuth = () => {
         }
     };
 
-    // Activar 2FA y obtener código QR
     const handleEnable2FA = async () => {
         try {
             const response = await fetch("http://127.0.0.1:8000/api/enable-2fa/", {
@@ -57,7 +54,6 @@ const TwoFactorAuth = () => {
         }
     };
 
-    // Verificar OTP y activar 2FA en la base de datos
     const handleVerify2FA = async () => {
         if (!otp.trim()) {
             alert("Debes ingresar un código OTP antes de verificar.");
@@ -78,8 +74,8 @@ const TwoFactorAuth = () => {
 
             if (response.ok) {
                 alert("2FA activado correctamente.");
-                setIs2FAEnabled(true); // Persistente: actualizamos el estado
-                setQrCode(null); // Ocultamos el QR tras la activación
+                setIs2FAEnabled(true);
+                setQrCode(null); 
             } else {
                 alert(`Código incorrecto: ${data.error}`);
             }
@@ -89,8 +85,6 @@ const TwoFactorAuth = () => {
             alert("Error al verificar el código.");
         }
     };
-
-    // Desactivar 2FA en la base de datos
     const handleDisable2FA = async () => {
         const otp_code = prompt("Introduce el código 2FA para desactivarlo:");
     
@@ -110,16 +104,16 @@ const TwoFactorAuth = () => {
             const response = await fetch("http://127.0.0.1:8000/api/disable-2fa/", {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${token}`, // Enviar token correctamente
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ otp_code }), // Enviar el código OTP
+                body: JSON.stringify({ otp_code }),
             });
     
             const data = await response.json();
             if (response.ok) {
                 alert("2FA desactivado correctamente.");
-                setIs2FAEnabled(false); // Ocultar el botón después de desactivar 2FA
+                setIs2FAEnabled(false);
             } else {
                 alert(`Error: ${data.error}`);
             }

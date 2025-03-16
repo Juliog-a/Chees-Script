@@ -14,9 +14,6 @@ admin.site.register(Publicacion)
 admin.site.register(Profile)
 admin.site.register(ComentarioPublicacion)
 
-
-
-# Definir las opciones permitidas
 DIFICULTADES_PERMITIDAS = [
     ("Principiante", "Principiante"),
     ("Intermedio", "Intermedio"),
