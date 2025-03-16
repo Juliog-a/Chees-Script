@@ -138,34 +138,31 @@ class DesafioViewSet(viewsets.ModelViewSet):
         respuesta_usuario = request.data.get("respuesta", "").strip().lower()
 
         if respuesta_usuario == desafio.solucion.strip().lower():
-            # Verificar si el usuario ya resolvió el desafío
             completado, creado = UsuarioDesafio.objects.get_or_create(usuario=usuario, desafio=desafio)
+
             if creado:
-                # 1) Sumar puntos
                 profile, _ = Profile.objects.get_or_create(user=usuario)
                 profile.points = F('points') + desafio.puntuacion
                 profile.save()
                 profile.refresh_from_db()
+                print("Puntos actuales tras actualización:", profile.points)
 
-                # 2) Desbloquear trofeos por DESAFÍO
-                #    (Solo si están en `desafio.trofeos_desbloqueables`)
+                # Desbloquear trofeos específicos del desafío
                 for trofeo in desafio.trofeos_desbloqueables.all():
-                    if not trofeo.desbloqueo_por_nivel and not trofeo.desbloqueado:
-                        print(f"Intentando desbloquear trofeo: {trofeo.id} para {usuario.username}")
+                    if usuario not in trofeo.usuarios_desbloqueados.all():
                         trofeo.fecha_obtenido = now()
                         trofeo.usuarios_desbloqueados.add(usuario)
                         trofeo.save()
-                        print("Usuarios con este trofeo:", trofeo.usuarios_desbloqueados.all())
-                        print("Trofeo guardado:", trofeo.desbloqueado, "Usuarios con el trofeo:", trofeo.usuarios_desbloqueados.all())
 
-                # 3) Desbloquear trofeos por nivel
+                # Verificar si debe desbloquear trofeos por nivel o desafíos
                 Trofeo.check_desafio_completados(usuario)
 
                 return Response({
-                    "mensaje": "¡Correcto! Has resuelto el desafío.",
+                        "mensaje": "¡Correcto! Has resuelto el desafío.",
                     "solucionado": True,
                     "puntos": profile.points
                 })
+
             else:
                 return Response({
                     "mensaje": "Ya has resuelto este desafío antes.",
@@ -178,27 +175,23 @@ class DesafioViewSet(viewsets.ModelViewSet):
                 "solucionado": False
             }, status=status.HTTP_400_BAD_REQUEST)
 
-
 class TrofeosUsuarioView(APIView):
-    """
-    Vista para obtener todos los trofeos junto con la info del usuario.
-    El frontend decide si el trofeo está bloqueado o no.
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         usuario = request.user
         
-        # Obtener los puntos del usuario desde Profile
         try:
             profile = usuario.profile
             puntos_usuario = profile.points
         except Profile.DoesNotExist:
             puntos_usuario = 0
 
-        # Opción A: Mostrar TODOS los trofeos de la base de datos
+        # ───────── AÑADE ESTA LÍNEA CLARAMENTE AQUÍ ────────────
+        Trofeo.check_desafio_completados(usuario)
+        # ───────────────────────────────────────────────────────
+
         trofeos = Trofeo.objects.all()
-        
         serializer = TrofeoSerializer(trofeos, many=True, context={'request': request})
         
         return Response({

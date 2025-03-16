@@ -83,13 +83,11 @@ class TrofeoSerializer(serializers.ModelSerializer):
         return request.build_absolute_uri(imagen_url) if request and imagen_url else None
 
     def get_desbloqueado_para_el_usuario(self, obj):
-        """Devuelve True si el usuario actual está en el ManyToMany 'usuarios_desbloqueados'"""
-        user = self.context['request'].user
-        if not user.is_authenticated:
-            return False
-        
-        # Si el user aparece en la relación M2M, significa que tiene el trofeo
-        return obj.usuarios_desbloqueados.filter(id=user.id).exists()
+        usuario = self.context['request'].user
+        desbloqueado = usuario in obj.usuarios_desbloqueados.all()
+        print(f"Trofeo: {obj.nombre} desbloqueado para usuario: {desbloqueado}")
+        return desbloqueado
+
     
 
 class UserSerializer(serializers.ModelSerializer):

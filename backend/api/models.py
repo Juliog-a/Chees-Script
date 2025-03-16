@@ -79,6 +79,65 @@ class Desafio(models.Model):
     def __str__(self):
         return f"{self.nombre} ({self.tematica} - {self.nivel_dificultad})"
   
+
+class Trofeo(models.Model):
+    nombre = models.CharField(max_length=255)
+    descripcion = models.TextField()
+    imagen_bloqueada = models.ImageField(upload_to="trofeos/", blank=True, null=True)
+    imagen_desbloqueada = models.ImageField(upload_to="trofeos/", blank=True, null=True)
+    fecha_obtenido = models.DateTimeField(blank=True, null=True)
+    profile = models.ForeignKey("Profile", on_delete=models.CASCADE, blank=True, null=True)
+    nivel_requerido = models.IntegerField(null=True, blank=True, default=None)
+    desbloqueo_por_nivel = models.BooleanField(default=False)
+    desafios_desbloqueantes = models.ManyToManyField(Desafio, blank=True, related_name='desafios_desbloqueantes')
+    usuarios_desbloqueados = models.ManyToManyField(User, blank=True, related_name='trofeos_desbloqueados')
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def check_desafio_completados(user):
+        profile, _ = Profile.objects.get_or_create(user=user)
+        user_points = profile.points
+        user_level = user_points // 10  # Cada 10 puntos = 1 nivel claramente aquí
+
+        desafios_completados_ids = UsuarioDesafio.objects.filter(
+            usuario=user
+        ).values_list('desafio_id', flat=True)
+
+        # 1) Desbloquear claramente por nivel (nivel del usuario)
+        trofeos_por_nivel = Trofeo.objects.filter(
+            desbloqueo_por_nivel=True,
+            nivel_requerido__lte=user_level  # Ahora sí, por nivel correcto!
+        ).exclude(usuarios_desbloqueados=user)
+
+        for trofeo in trofeos_por_nivel:
+            trofeo.usuarios_desbloqueados.add(user)
+            trofeo.fecha_obtenido = now()
+            trofeo.save()
+
+        # 2) Desbloqueo por desafíos específicos
+        trofeos_por_desafio = Trofeo.objects.filter(
+            desbloqueo_por_nivel=False,
+            desafios_desbloqueantes__id__in=desafios_completados_ids
+        ).exclude(usuarios_desbloqueados=user).distinct()
+
+        for trofeo in trofeos_por_desafio:
+            trofeo.usuarios_desbloqueados.add(user)
+            trofeo.fecha_obtenido = now()
+            trofeo.save()
+
+
+
+    def __str__(self):
+        return self.nombre
+    
+
+
+
+
+
+    
 class RecursosDidacticos(models.Model):
     TIPOS_CHOICES = [
         ('teoria', 'Teoría'),
@@ -136,64 +195,6 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.points} puntos"
 
-class Trofeo(models.Model):
-    nombre = models.CharField(max_length=255)
-    descripcion = models.TextField()
-    imagen_bloqueada = models.ImageField(upload_to="trofeos/", blank=True, null=True)
-    imagen_desbloqueada = models.ImageField(upload_to="trofeos/", blank=True, null=True)
-    desbloqueado = models.BooleanField(default=False)
-    fecha_obtenido = models.DateTimeField(blank=True, null=True)
-    usuarios_desbloqueados = models.ManyToManyField(User, blank=True, related_name='trofeos_desbloqueados')
-    profile = models.ForeignKey("Profile", on_delete=models.CASCADE, blank=True, null=True)
-    
-    nivel_requerido = models.IntegerField(null=True, blank=True, default=None)
-    desbloqueo_por_nivel = models.BooleanField(default=False)
-    desafios_desbloqueantes = models.ManyToManyField(Desafio, blank=True, related_name='desafios_desbloqueantes')
-
-    def save(self, *args, **kwargs):
-        """
-        Verifica si debe desbloquearse.
-        """
-        if not self.desbloqueado:
-            if self.desbloqueo_por_nivel:
-                # Podrías dejarlo a un estado "desbloqueado global" si cumples X condición
-                # O simplemente no usar auto-lógica y confiar en vistas.
-                pass
-            else:
-                pass
-
-        super().save(*args, **kwargs)
-
-    @staticmethod
-    def check_desafio_completados(user):
-        """
-        Verifica si un usuario ha completado el número requerido de desafíos
-        o ha completado algún desafío específico.
-        """
-        profile = getattr(user, 'profile', None)
-        user_points = profile.points if profile else 0
-        trofeos = Trofeo.objects.exclude(usuarios_desbloqueados=user)
-        desafios_completados = UsuarioDesafio.objects.filter(usuario=user).values_list("desafio", flat=True)
-
-        for trofeo in trofeos:
-            # Si es un trofeo por nivel
-            if trofeo.desbloqueo_por_nivel:
-                # Supongamos que estás contando desafíos completados
-                # (Ojo: si tu "nivel" es un número de puntos, cambia la lógica)
-                if user_points >= (trofeo.nivel_requerido or 0):
-                    trofeo.usuarios_desbloqueados.add(user)
-                    trofeo.fecha_obtenido = now()
-                    trofeo.save()
-            else:
-                # Si es un trofeo por desafíos, revisa si el usuario completó
-                # alguno de los desafíos 'desafios_desbloqueantes'
-                if trofeo.desafios_desbloqueantes.filter(id__in=desafios_completados).exists():
-                    trofeo.usuarios_desbloqueados.add(user)
-                    trofeo.fecha_obtenido = now()
-                    trofeo.save()
-    def __str__(self):
-        estado = "Desbloqueado" if self.desbloqueado else "Bloqueado"
-        return f"{self.nombre} - {'Desbloqueado' if self.desbloqueado else 'Bloqueado'}"
 
 class Publicacion(models.Model):
     titulo = models.CharField(max_length=128)
@@ -268,6 +269,5 @@ def save_profile(sender, instance, **kwargs):
     para asegurar la sincronización.
     """
     instance.profile.save()
-
 
 

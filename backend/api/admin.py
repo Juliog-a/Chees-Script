@@ -7,6 +7,8 @@ from django.utils.safestring import mark_safe
 from django.utils.html import format_html
 from .models import Trofeo, UsuarioDesafio
 from rest_framework import serializers
+from django.utils.timezone import now
+
 
 admin.site.register(Publicacion)
 admin.site.register(Profile)
@@ -105,7 +107,6 @@ class RecursosDidacticosAdmin(admin.ModelAdmin):
         obj.save() 
 
 
-
 class TrofeoForm(forms.ModelForm):
     class Meta:
         model = Trofeo
@@ -116,16 +117,16 @@ class TrofeoForm(forms.ModelForm):
         if not self.instance.desbloqueo_por_nivel:
             self.fields['nivel_requerido'].widget.attrs['disabled'] = True
 
+
 @admin.register(Trofeo)
 class TrofeoAdmin(admin.ModelAdmin):
-    """ Configuración del panel de administración para trofeos """
     form = TrofeoForm
 
-    list_display = ('id', 'nombre', 'desbloqueado', 'nivel_requerido', 'fecha_obtenido', 'desbloqueo_por_nivel')
-    list_filter = ('desbloqueado', 'nivel_requerido', 'desbloqueo_por_nivel')  
-    search_fields = ('nombre', 'descripcion')  
+    list_display = ('id', 'nombre', 'nivel_requerido', 'desbloqueo_por_nivel', 'fecha_obtenido')
+    list_filter = ('desbloqueo_por_nivel', 'nivel_requerido')
+    search_fields = ('nombre', 'descripcion')
 
-    readonly_fields = ('fecha_obtenido',)  
+    readonly_fields = ('fecha_obtenido',)
 
     fieldsets = (
         ("Información General", {
@@ -135,17 +136,16 @@ class TrofeoAdmin(admin.ModelAdmin):
             "fields": ("desafios_desbloqueantes",)
         }),
         ("Usuarios que han desbloqueado", {
-            "fields": ("usuarios_desbloqueados",)  # Nuevo field ManyToMany
+            "fields": ("usuarios_desbloqueados",)
         }),
         ("Imágenes", {
             "fields": ("imagen_bloqueada", "imagen_desbloqueada")
         }),
         ("Estado", {
-            "fields": ("desbloqueado", "fecha_obtenido")
+            "fields": ("fecha_obtenido",)
         }),
     )
 
-    # Añade 'usuarios_desbloqueados' para usar widget horizontal en el admin
     filter_horizontal = ('desafios_desbloqueantes', 'usuarios_desbloqueados')
 
     class Media:
@@ -159,6 +159,7 @@ class TrofeoAdmin(admin.ModelAdmin):
                 "        nivelRequerido.removeAttribute('disabled');"
                 "    }} else {{"
                 "        nivelRequerido.setAttribute('disabled', 'true');"
+                "        nivelRequerido.value = '';"
                 "    }}"
                 "}}"
                 "desbloqueoPorNivel.addEventListener('change', toggleNivelRequerido);"
@@ -170,8 +171,11 @@ class TrofeoAdmin(admin.ModelAdmin):
     actions = ['marcar_como_desbloqueado']
 
     def marcar_como_desbloqueado(self, request, queryset):
-        """ Acción en Django Admin para marcar trofeos como desbloqueados """
-        queryset.update(desbloqueado=True, fecha_obtenido=now())
+        for trofeo in queryset:
+            trofeo.fecha_obtenido = now()
+            trofeo.save()
+            usuarios = Profile.objects.all().values_list('user', flat=True)
+            trofeo.usuarios_desbloqueados.add(*usuarios)
         self.message_user(request, "Los trofeos seleccionados se han marcado como desbloqueados.")
 
     marcar_como_desbloqueado.short_description = 'Marcar trofeos como desbloqueados'
