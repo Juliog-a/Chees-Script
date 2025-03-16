@@ -58,7 +58,7 @@ const Trofeos = () => {
         setTrofeos(data.trofeos);
         setCompletedChallenges(data.usuario?.desafios_completados || []);
       })
-      .catch((error) => console.error("❌ Error al cargar los trofeos:", error));
+      .catch((error) => console.error(" Error al cargar los trofeos:", error));
   };
 
 
@@ -126,16 +126,25 @@ const Trofeos = () => {
 
             // Verificar si hay imagen desbloqueada o usar la bloqueada
             const imagenUrl = desbloqueado
-              ? trofeo.imagen_desbloqueada
-                ? `${backendURL}${new URL(trofeo.imagen_desbloqueada).pathname}`
-                : "/fallback-image.png"
-              : `${backendURL}${new URL(trofeo.imagen_actual).pathname}`;
-
+              && trofeo.imagen_desbloqueada 
+              && trofeo.imagen_desbloqueada.trim() !== ""
+                ? `${backendURL}${new URL(trofeo.imagen_desbloqueada, backendURL).pathname}`
+              : !desbloqueado && trofeo.imagen_actual && trofeo.imagen_actual.trim() !== ""
+                ? `${backendURL}${new URL(trofeo.imagen_actual, backendURL).pathname}`
+                : "/fallback-image.png";
+          
+          
+          
+            // Evita definitivamente cadenas vacías
+            const imagenFinal = (imagenUrl && imagenUrl.trim()) ? imagenUrl : "/fallback-image.png";
+          
             return (
               <div key={trofeo.id} className="p-4 border rounded-lg shadow-md">
                 <img
-                  src={imagenUrl}
+                  src={imagenFinal}
                   alt={trofeo.nombre}
+                  width={128} 
+                  height={128} 
                   className="w-32 h-32 mx-auto border-4 border-gray-800 shadow-lg rounded-lg object-cover"
                   onError={(e) => {
                     if (e.target.src !== "/fallback-image.png") {
