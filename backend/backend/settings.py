@@ -14,7 +14,7 @@ load_dotenv()
 
 # Django settings for backend project
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-key-for-dev')
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ["*"]
 ROOT_URLCONF = 'backend.urls'
 
