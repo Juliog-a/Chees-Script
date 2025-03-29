@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken"));
     const [refreshToken, setRefreshToken] = useState(localStorage.getItem("refreshToken"));
 
-    {/* Función para refrescar el token de acceso */}
+    // Función para refrescar el token de acceso
     const refreshAccessToken = async () => {
         if (!refreshToken) {
             console.log("No hay refreshToken disponible.");
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    {/*Función para verificar si el token sigue siendo válido y si el usuario tiene perfil*/}
+    // Función para verificar si el token sigue siendo válido y si el usuario tiene perfil
     const checkTokenValidity = async () => {
         const token = localStorage.getItem("accessToken");
         if (!token) {
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    {/*manejo de la autenticación y verificar el token periódicamente*/}
+    //manejo de la autenticación y verificar el token periódicamente
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         const refresh = localStorage.getItem("refreshToken");
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    {/*Función de inicio de sesión*/}
+    //Función de inicio de sesión
     const login = (token, refresh, is2FA = false) => {
         if (is2FA) {
             console.log("2FA habilitado. Esperando verificación antes de guardar el token.");
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
     };
 
-    {/*Función de cierre de sesión*/}
+    //Función de cierre de sesión
     const logout = () => {
         console.log("Cerrando sesión...");
         localStorage.removeItem("accessToken");

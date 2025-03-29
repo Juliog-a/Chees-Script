@@ -190,11 +190,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
     "https://chees-script.vercel.app",
+    "https://chees-script-6tmzea9s9-julios-projects-679e56eb.vercel.app",
+
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000", "https://chees-script.vercel.app",]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000", "https://chees-script.vercel.app",    "https://chees-script-6tmzea9s9-julios-projects-679e56eb.vercel.app",
+]
 
 CORS_ALLOW_METHODS = [
     "GET",
