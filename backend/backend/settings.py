@@ -134,19 +134,17 @@ DATABASES = {
     }
 }
 USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
-
-
-if USE_DEFENDER and 'defender' not in INSTALLED_APPS:
-    INSTALLED_APPS.append('defender')
-if USE_DEFENDER and 'defender.middleware.LoginFailedMiddleware' not in MIDDLEWARE:
-    MIDDLEWARE.insert(1, 'defender.middleware.LoginFailedMiddleware')
-
+USE_REDIS = os.getenv("USE_REDIS", "false").lower() == "true"
 
 if USE_DEFENDER:
-    # No usar Redis (ni importarlo)
-    DEFENDER_REDIS_URL = None
+    INSTALLED_APPS += ['defender']
+    MIDDLEWARE.insert(1, 'defender.middleware.FailedLoginMiddleware')
 
-    # Config estándar
+    if not USE_REDIS:
+        DEFENDER_REDIS_URL = "memory://"
+    else:
+        DEFENDER_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
     DEFENDER_STORE_ACCESS_ATTEMPTS = True
     DEFENDER_LOCKOUT_URL = "/locked/"
     DEFENDER_USERNAME_FORM_FIELD = "username"
@@ -156,6 +154,7 @@ if USE_DEFENDER:
     DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"
     DEFENDER_USE_CELERY = False
     DEFENDER_REDIS_PREFIX = "defender"
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
