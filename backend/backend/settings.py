@@ -137,6 +137,12 @@ USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
 
 if USE_DEFENDER:
     INSTALLED_APPS += ['defender']
+    MIDDLEWARE.insert(1, 'defender.middleware.FailedLoginMiddleware')
+    DEFENDER_REDIS_URL = None 
+    DEFENDER_STORE_ACCESS_ATTEMPTS = True  # usa DB para guardar intentos
+
+if USE_DEFENDER:
+    INSTALLED_APPS += ['defender']
     MIDDLEWARE += ['defender.middleware.FailedLoginMiddleware']
 
 MEDIA_URL = '/media/'
@@ -209,7 +215,8 @@ SECURE_REFERRER_POLICY = "same-origin"  # Evita que el navegador envíe referrer
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies reversos (NGINX)
 
 # Configuración de Django Defender
-DEFENDER_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")  # URL de Redis
+USE_REDIS = os.getenv("USE_REDIS", "false").lower() == "true"
+DEFENDER_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 DEFENDER_LOCKOUT_URL = "/locked/"  # Página a la que se redirige al usuario bloqueado
 DEFENDER_USERNAME_FORM_FIELD = "username"  # Campo usado para autenticación
 DEFENDER_ENABLE_COOLOFF = True  # Habilitar tiempo de espera tras intentos fallidos
