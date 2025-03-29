@@ -30,6 +30,7 @@ export default function Blog() {
     useEffect(() => {
         cargarPublicaciones();
     }, []);
+    
     const validarURLImagen = (url) => {
         const regex = /^https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg)$/i;
         return regex.test(url);
@@ -76,6 +77,8 @@ export default function Blog() {
         }
     };
 
+
+    
     return (
         <div className="w-screen min-h-screen flex flex-col bg-white text-black p-6 overflow-x-hidden">
             <h1 className="text-3xl md:text-5xl font-bold text-center mb-8">Blog</h1>

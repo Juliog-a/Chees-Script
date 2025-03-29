@@ -14,6 +14,8 @@ const Login = () => {
     const [step, setStep] = useState("login"); // Estado para controlar qué formulario mostrar
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [attempts, setAttempts] = useState(0); // Contador de intentos fallidos
+    const [isLocked, setIsLocked] = useState(false); // Estado para bloqueo
     const navigate = useNavigate();
 
     // Redirección automática si ya está autenticado
@@ -28,10 +30,10 @@ const Login = () => {
         e.preventDefault();
         setError(null);
         setSuccess(null);
-    
+
         try {
             const response = await axios.post("http://127.0.0.1:8000/api/login/", { username, password });
-    
+
             if (response.data["2fa_required"]) {
                 setStep("2fa");
                 sessionStorage.setItem("tempToken", response.data.temp_token);
@@ -39,23 +41,27 @@ const Login = () => {
                 setSuccess("Introduce el código 2FA");
                 return;
             }
-    
+
             localStorage.setItem("accessToken", response.data.access);
             localStorage.setItem("refreshToken", response.data.refresh);
             login(response.data.access, response.data.refresh, false);
-    
+
             setSuccess("Login exitoso. Redirigiendo...");
             setTimeout(() => navigate("/perfil"), 1000);
-    
+
         } catch (error) {
             if (error.response?.status === 429) {
-                setError("Demasiados intentos fallidos. Inténtalo más tarde.");
+                setIsLocked(true);
+                setError(" Demasiados intentos fallidos. Inténtalo en 3 minutos.");
             } else {
-                setError(error.response?.data?.error || "Credenciales incorrectas");
+                const newAttempts = attempts + 1;
+                setAttempts(newAttempts);
+                setError(` Credenciales incorrectas. Intento ${newAttempts}/3`);
             }
         }
     };
-    
+
+    // Manejar envío del formulario OTP
     const handleVerifyOTP = async (e) => {
         e.preventDefault();
         setError(null);
@@ -94,7 +100,7 @@ const Login = () => {
                     {error && <p className="text-red-500">{error}</p>}
                     {success && <p className="text-green-500">{success}</p>}
 
-                    {step === "login" && (
+                    {step === "login" && !isLocked && (
                         <form onSubmit={handleLogin} className="flex flex-col space-y-4">
                             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Usuario/Email" className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" required />
                             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" required />
@@ -107,6 +113,10 @@ const Login = () => {
                             <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Código 2FA" className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100 text-center text-lg" required />
                             <button type="submit" className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">Verificar Código</button>
                         </form>
+                    )}
+
+                    {isLocked && (
+                        <p className="text-red-600 font-bold"></p>
                     )}
 
                     <div className="mt-4">

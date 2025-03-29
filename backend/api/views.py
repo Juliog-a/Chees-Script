@@ -31,6 +31,12 @@ from defender.decorators import watch_login
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from rest_framework.viewsets import ViewSet
+from django.contrib.auth.views import PasswordResetConfirmView
+from django.contrib.auth.hashers import check_password
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.shortcuts import render
 
 from .serializers import (
     DesafioSerializer, PublicacionSerializer, ComentarioPublicacionSerializer,
@@ -72,6 +78,7 @@ def obtener_usuario(request):
     return Response({
         "id": usuario.id,
         "username": usuario.username,
+        "is_superuser": usuario.is_superuser,
     })
 
 
@@ -185,17 +192,41 @@ class TrofeosUsuarioView(APIView):
             puntos_usuario = profile.points
         except Profile.DoesNotExist:
             puntos_usuario = 0
+
         Trofeo.check_desafio_completados(usuario)
+
         trofeos = Trofeo.objects.all()
         serializer = TrofeoSerializer(trofeos, many=True, context={'request': request})
-        
+
+        trofeos_data = serializer.data
+
+        # Añade información si el usuario ya ha sido notificado
+        for trofeo in trofeos_data:
+            trofeo_obj = Trofeo.objects.get(pk=trofeo['id'])
+            trofeo['ya_notificado'] = usuario in trofeo_obj.usuarios_notificados.all()
+
         return Response({
             "usuario": {
                 "username": usuario.username,
                 "puntos": puntos_usuario
             },
-            "trofeos": serializer.data
+            "trofeos": trofeos_data
         })
+
+    def post(self, request):
+        trofeo_id = request.data.get("trofeo_id")
+        usuario = request.user
+
+        if not trofeo_id:
+            return Response({"mensaje": "Debe proporcionar el ID del trofeo."}, status=400)
+
+        try:
+            trofeo = Trofeo.objects.get(pk=trofeo_id)
+            trofeo.marcar_notificado(usuario)
+            return Response({"mensaje": "Trofeo marcado como notificado."}, status=200)
+        except Trofeo.DoesNotExist:
+            return Response({"mensaje": "El trofeo no existe."}, status=404)
+
 
 
 class DesbloquearTrofeoView(APIView):
@@ -425,32 +456,38 @@ class FormularioContactoViewSet(viewsets.ModelViewSet):
 class CustomAuthToken(APIView):
     permission_classes = [AllowAny]
 
-    @watch_login  # Django-Defender protege esta vista
+    @watch_login  # Proteger contra ataques de fuerza bruta
     def post(self, request):
         username_or_email = request.data.get("username")
         password = request.data.get("password")
 
-        if not username_or_email or not password:
-            return Response({"error": "Faltan datos."}, status=status.HTTP_400_BAD_REQUEST)
+        # Verificar intentos fallidos en cache
+        cache_key = f"failed_attempts_{username_or_email}"
+        failed_attempts = cache.get(cache_key, 0)
 
-        # Autenticación con email o username
+        if failed_attempts >= 5:
+            return Response({"error": "Demasiados intentos fallidos. Inténtalo más tarde."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
         user = None
         if "@" in username_or_email:
             try:
                 user = User.objects.get(email=username_or_email)
                 user = authenticate(username=user.username, password=password)
             except User.DoesNotExist:
+                cache.set(cache_key, failed_attempts + 1, timeout=300)  # Bloqueo por 5 min
                 return Response({"error": "Usuario no encontrado."}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             user = authenticate(username=username_or_email, password=password)
 
         if user is not None:
+            cache.delete(cache_key)  # Reiniciar intentos fallidos al hacer login correctamente
             refresh = RefreshToken.for_user(user)
             return Response({
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
             })
 
+        cache.set(cache_key, failed_attempts + 1, timeout=300)  # Aumentar intento fallido
         return Response({"error": "Credenciales incorrectas"}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UserDetailView(APIView):
@@ -563,8 +600,6 @@ class RegisterView(APIView):
             return Response({"error": "El email ya está registrado."}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.create_user(username=username, email=email, password=password)
-
-        # Generar los tokens de acceso y refresco para el usuario recién registrado
         refresh = RefreshToken.for_user(user)
         access = str(refresh.access_token)
 
@@ -575,6 +610,14 @@ class RegisterView(APIView):
         }, status=status.HTTP_201_CREATED)
     
 
+
+def validate_new_password(user, new_password, old_password=None):
+    if old_password and check_password(new_password, old_password):
+        raise ValidationError("La nueva contraseña no puede ser igual a la anterior.")
+    if len(new_password) < 8:
+        raise ValidationError("La nueva contraseña debe tener al menos 8 caracteres.")
+    validate_password(new_password, user=user)
+    
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -591,15 +634,23 @@ class ChangePasswordView(APIView):
         if not check_password(old_password, user.password):
             cache.set(cache_key, failed_attempts + 1, timeout=600)  # Bloqueo por 10 minutos
             return Response({"error": "La contraseña antigua es incorrecta."}, status=status.HTTP_400_BAD_REQUEST)
-
-        cache.delete(cache_key)  # Restablecer intentos fallidos
-
-
+        
+        if check_password(new_password, user.password):
+            return Response({"error": "La nueva contraseña no puede ser igual a la anterior."}, status=status.HTTP_400_BAD_REQUEST)
+        
         if len(new_password) < 8:
             return Response({"error": "La nueva contraseña debe tener al menos 8 caracteres."}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            validate_password(new_password, user)
+        except ValidationError as e:
+            return Response({"error": e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
+
+
         user.password = make_password(new_password)
         user.save()
+
+        cache.delete(cache_key)  # Restablecer intentos fallidos
     
         refresh = RefreshToken.for_user(user)
         new_access_token = str(refresh.access_token)
@@ -609,21 +660,45 @@ class ChangePasswordView(APIView):
             "access_token": new_access_token
         }, status=status.HTTP_200_OK)
 
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'registration/password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
 
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        new_password = form.cleaned_data.get('new_password1')
 
-#Doble factor de verificación
+        try:
+            validate_new_password(user, new_password)
+        except ValidationError as e:
+            form.add_error('new_password1', e)
+            return self.form_invalid(form)
+
+        user.set_password(new_password)
+        user.save()
+        return super().form_valid(form)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TwoFactorAuthView(View):
-    def post(self, request):
+
+    def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
             username = data.get("username")
             password = data.get("password")
+            cache_key = f"login_attempts_{username}"
+            attempts = cache.get(cache_key, 0)
+
+            # Si ya ha fallado 3 veces, bloquear por 1 minutos
+            if attempts >= 3:
+                return JsonResponse({"error": "Demasiados intentos fallidos. Inténtalo en 1 minutos."}, status=429)
 
             user = authenticate(username=username, password=password)
 
             if user:
+                cache.delete(cache_key)  # Si el login es correcto, reinicia los intentos
+
                 if hasattr(user, 'profile') and user.profile.is2fa_enabled:
                     temp_token = RefreshToken.for_user(user).access_token
                     return JsonResponse({
@@ -638,15 +713,13 @@ class TwoFactorAuthView(View):
                     "access": str(refresh.access_token),
                     "refresh": str(refresh)
                 }, status=200)
+            attempts += 1
+            cache.set(cache_key, attempts, timeout=60)  # Bloquear por 5 minutos tras 5 intentos fallidos
 
             return JsonResponse({"error": "Credenciales incorrectas"}, status=400)
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
-
-
-
-
 
 
 

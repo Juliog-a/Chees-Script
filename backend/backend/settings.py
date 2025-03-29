@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_static',
     #'two_factor', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
     'rest_framework_simplejwt.token_blacklist',
+    'django_password_validators.password_history',
 ]
 
 MIDDLEWARE = [
@@ -155,6 +156,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'django_password_validators.password_history.password_validation.UniquePasswordsValidator',
+        'OPTIONS': {
+            'last_passwords': 5
+    }
+    }
 ]
 
 # Localization configuration
@@ -228,13 +235,15 @@ CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")  # Para c
 
 CSP_IMG_SRC = ("'self'", "data:", "blob:")  # Permitir imágenes en base64 y blobs
 
-CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "ws://localhost:8000", "http://127.0.0.1:8000", "http://127.0.0.1:5173") # Permite llamadas a APIs externas (ajusta según tu backend)
+CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "ws://localhost:8000", "http://127.0.0.1:8000", "http://127.0.0.1:5173", "http://localhost:5173") # Permite llamadas a APIs externas (ajusta según tu backend)
 
 CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  # Para permitir iframes de videos embebidos
 
 CSP_OBJECT_SRC = ("'none'",)  # Bloquea Flash y otros objetos inseguros
 
-CSP_FORM_ACTION = ("'self'",)  # Evita envíos de formularios a dominios externos
+CSP_FORM_ACTION = ("'self'",
+    'http://localhost:5173',
+    )  # Evita envíos de formularios a dominios externos
 
 CSP_WORKER_SRC = ("'self'", "blob:")  # Permite Web Workers y Service Workers (importante para PWA)
 

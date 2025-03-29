@@ -49,6 +49,7 @@ class TrofeoSerializer(serializers.ModelSerializer):
     imagen_bloqueada = serializers.SerializerMethodField()
     imagen_desbloqueada = serializers.SerializerMethodField()
     desbloqueado_para_el_usuario = serializers.SerializerMethodField()
+    notificacion_mostrada = serializers.SerializerMethodField() # nuevo
 
     class Meta:
         model = Trofeo
@@ -62,8 +63,14 @@ class TrofeoSerializer(serializers.ModelSerializer):
             'nivel_requerido',
             'fecha_obtenido',
             'desbloqueo_por_nivel',
-            'desbloqueado_para_el_usuario',  # <-- ¡nuevo!
+            'notificacion_mostrada',
+            'desbloqueado_para_el_usuario'
+
         ]
+
+    def get_notificacion_mostrada(self, obj):
+        usuario = self.context['request'].user
+        return obj.usuarios_notificados.filter(id=usuario.id).exists()
 
     def get_imagen_actual(self, obj):
         request = self.context.get('request')
@@ -92,11 +99,12 @@ class UserSerializer(serializers.ModelSerializer):
     points = serializers.IntegerField(source='profile.points', read_only=True)
     profile_image = serializers.URLField(source='profile.profile_image', required=False)
     is2fa_enabled = serializers.BooleanField(source="profile.is2fa_enabled", read_only=True)  # Agregar el campo
-
+    is_staff = serializers.BooleanField(read_only=True)
+    is_superuser = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'points', 'profile_image', 'is2fa_enabled']
+        fields = ['id', 'username', 'email', 'points', 'profile_image', 'is2fa_enabled', 'is_staff', 'is_superuser']
         
     def get_points(self, obj):
         """Obtiene los puntos desde el perfil del usuario."""
@@ -122,38 +130,34 @@ class ComentarioPublicacionSerializer(serializers.ModelSerializer):
 
 
 class PublicacionSerializer(serializers.ModelSerializer):
-    """Serializador de Publicaciones con Comentarios Incluidos """
-    usuario_nombre = serializers.CharField(source="usuario.username", read_only=True)  # Obtener el nombre del usuario
-    liked_by_user = serializers.SerializerMethodField()  # Verifica si el usuario autenticado ha dado like
-    likes_count = serializers.IntegerField(source="likes.count", read_only=True)  # Número total de likes
+    usuario_nombre = serializers.CharField(source="usuario.username", read_only=True)
+    usuario = serializers.PrimaryKeyRelatedField(read_only=True)  # <--- ESENCIAL!
+    liked_by_user = serializers.SerializerMethodField()
+    likes_count = serializers.IntegerField(source="likes.count", read_only=True)
     comentarios = ComentarioPublicacionSerializer(many=True, read_only=True)
 
     url_imagen = serializers.CharField(
-        max_length=256, 
-        allow_blank=True,  # Permite cadenas vacías
-        allow_null=True,    # Permite valores nulos
-        required=False      # No es obligatorio
+        max_length=256, allow_blank=True, allow_null=True, required=False
     )
 
-
     contenido = serializers.CharField(
-        max_length=130,  
+        max_length=130,
         error_messages={"max_length": "El contenido no puede superar los 200 caracteres."}
     )
 
-
     class Meta:
         model = Publicacion
-        fields = ['id', 'titulo', 'contenido', 'fecha_creacion', 'url_imagen', 'likes_count', 
-                  'liked_by_user', 'usuario_nombre', 'usuario', 'comentarios']
+        fields = [
+            'id', 'titulo', 'contenido', 'fecha_creacion', 'url_imagen',
+            'likes_count', 'liked_by_user', 'usuario_nombre', 'usuario', 'comentarios'
+        ]
 
     def validate_contenido(self, value):
-        """ Validar que el contenido no supere 200 caracteres """
         if len(value) > 200:
             raise serializers.ValidationError("El contenido no puede tener más de 200 caracteres.")
-        # Sanitiza la entrada con bleach para evitar XSS
         value = bleach.clean(value)
         return value
+
 
     def validate_url_imagen(self, value):
         """ Valida que la URL sea una imagen válida """

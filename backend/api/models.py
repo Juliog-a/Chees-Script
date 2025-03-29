@@ -87,7 +87,17 @@ class Trofeo(models.Model):
     nivel_requerido = models.IntegerField(null=True, blank=True, default=None)
     desbloqueo_por_nivel = models.BooleanField(default=False)
     desafios_desbloqueantes = models.ManyToManyField(Desafio, blank=True, related_name='desafios_desbloqueantes')
-    usuarios_desbloqueados = models.ManyToManyField(User, blank=True, related_name='trofeos_desbloqueados')
+    usuarios_desbloqueados = models.ManyToManyField(
+        User, blank=True, related_name='trofeos_desbloqueados'
+    )
+    usuarios_notificados = models.ManyToManyField(  # <-- Nuevo campo
+        User, blank=True, related_name='trofeos_notificados'
+    )
+
+    def marcar_notificado(self, usuario):
+        self.usuarios_notificados.add(usuario)
+        self.save()
+
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -126,11 +136,6 @@ class Trofeo(models.Model):
 
     def __str__(self):
         return self.nombre
-    
-
-
-
-
 
     
 class RecursosDidacticos(models.Model):

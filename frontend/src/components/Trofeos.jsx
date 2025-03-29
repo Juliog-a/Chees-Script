@@ -12,7 +12,7 @@ const Trofeos = () => {
 
   const cargarTrofeos = () => {
     const token = localStorage.getItem("accessToken");
-  
+    
     if (!token) {
       console.error("No hay token disponible, el usuario no está autenticado.");
       return;
@@ -22,42 +22,37 @@ const Trofeos = () => {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => {
-        console.log("Datos recibidos actualizados:", data);
-  
-        const userPoints = data.usuario?.puntos || 0;
-  
-        const storedUnlockedTrophies = new Set(
-          JSON.parse(localStorage.getItem("unlockedTrophies")) || []
-        );
-  
-        const nuevosTrofeosDesbloqueados = new Set();
-  
-        data.trofeos.forEach((trofeo) => {
-          if (trofeo.desbloqueado_para_el_usuario) {
-            nuevosTrofeosDesbloqueados.add(trofeo.id);
-  
-            if (!storedUnlockedTrophies.has(trofeo.id)) {
-              toast.success(`¡Trofeo desbloqueado! ${trofeo.nombre}`, {
-                position: "top-center",
-                autoClose: 4000,
-              });
-            }
-          }
-        });
-  
-        localStorage.setItem(
-          "unlockedTrophies",
-          JSON.stringify([...nuevosTrofeosDesbloqueados])
-        );
-  
-        setPreviousUnlockedTrophies(nuevosTrofeosDesbloqueados);
-        setUserPoints(userPoints);
+      .then(async (data) => {
+        setUserPoints(data.usuario?.puntos || 0);
         setTrofeos(data.trofeos);
         setCompletedChallenges(data.usuario?.desafios_completados || []);
+  
+        data.trofeos.forEach((trofeo) => {
+          if (trofeo.desbloqueado_para_el_usuario && !trofeo.ya_notificado) {
+            toast.success(`¡Trofeo desbloqueado! ${trofeo.nombre}`, {
+              position: "top-center",
+              autoClose: 4000,
+            });
+  
+            // Marca en el backend como notificado
+            fetch("http://localhost:8000/api/trofeos/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ trofeo_id: trofeo.id }),
+            })
+            .then(res => res.json())
+            .then(res => console.log(res.mensaje))
+            .catch(err => console.error("Error al marcar notificación:", err));
+          }
+        });
       })
-      .catch((error) => console.error(" Error al cargar los trofeos:", error));
+      .catch((error) => console.error("Error al cargar los trofeos:", error));
   };
+  
+  
 
   const verificarRespuesta = async (desafioId, respuesta) => {
     const token = localStorage.getItem("accessToken");

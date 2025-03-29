@@ -11,14 +11,24 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
 
     const maxCaracteres = 100;
     const token = localStorage.getItem("accessToken");
+
     useEffect(() => {
+        console.log("Publicacion recibida:", publicacion);
+
         if (!token) return;
         axios.get("http://127.0.0.1:8000/api/usuario/", {
             headers: { Authorization: `Bearer ${token}` },
         })
+
         .then(response => {
             const usuario = response.data;
-            setEsPropietario(usuario.id === publicacion.usuario);
+            const usuarioId = parseInt(usuario.id);
+            const publicacionUsuarioId = parseInt(publicacion.usuario);
+
+        // Verificar si el usuario actual es el propietario de la publicación
+            setEsPropietario(usuarioId === publicacionUsuarioId);
+
+        // Verificar si el usuario tiene permisos de administrador
             setEsAdmin(usuario.is_staff || usuario.is_superuser);
         })
         .catch(error => console.error("Error al obtener datos del usuario:", error));
