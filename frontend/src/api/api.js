@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://127.0.0.1:8000/api", // URL del backend Django
+  baseURL: "https://chees-script.onrender.com/api",
 });
+
 
 export default API;
