@@ -143,22 +143,19 @@ if USE_DEFENDER and 'defender.middleware.FailedLoginMiddleware' not in MIDDLEWAR
 
 
 if USE_DEFENDER:
-    # Desactivar Redis por completo
-    import defender.settings as defender_settings
-    defender_settings.DEFENDER_REDIS_URL = None
-# Configuración de Django Defender
-DEFENDER_LOCKOUT_URL = "/locked/"  # Página a la que se redirige al usuario bloqueado
-DEFENDER_USERNAME_FORM_FIELD = "username"  # Campo usado para autenticación
-DEFENDER_ENABLE_COOLOFF = True  # Habilitar tiempo de espera tras intentos fallidos
-DEFENDER_COOLOFF_TIME = 300  # Tiempo de espera en segundos (5 minutos)
-DEFENDER_LOGIN_FAILURE_LIMIT = 5  # Número de intentos antes del bloqueo
-DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"  # Plantilla personalizada de bloqueo
-DEFENDER_USE_CELERY = False  # Desactivar Celery si no lo usas
-DEFENDER_REDIS_PREFIX = "defender"  # Prefijo para claves en Redis
+    # No usar Redis (ni importarlo)
+    DEFENDER_REDIS_URL = None
 
-# Si no usas Redis, puedes almacenar los intentos fallidos en la base de datos:
-DEFENDER_STORE_ACCESS_ATTEMPTS = True  # Guarda intentos fallidos en la base de datos
-
+    # Config estándar
+    DEFENDER_STORE_ACCESS_ATTEMPTS = True
+    DEFENDER_LOCKOUT_URL = "/locked/"
+    DEFENDER_USERNAME_FORM_FIELD = "username"
+    DEFENDER_ENABLE_COOLOFF = True
+    DEFENDER_COOLOFF_TIME = 300
+    DEFENDER_LOGIN_FAILURE_LIMIT = 5
+    DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"
+    DEFENDER_USE_CELERY = False
+    DEFENDER_REDIS_PREFIX = "defender"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
