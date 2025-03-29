@@ -82,6 +82,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 INSTALLED_APPS = [
+    'defender'
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -103,6 +104,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'defender.middleware.FailedLoginMiddleware'
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -133,27 +135,17 @@ DATABASES = {
         'NAME': BASE_DIR / "db.sqlite3",
     }
 }
-USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
-USE_REDIS = os.getenv("USE_REDIS", "false").lower() == "true"
 
-if USE_DEFENDER:
-    INSTALLED_APPS += ['defender']
-    MIDDLEWARE.insert(1, 'defender.middleware.FailedLoginMiddleware')
 
-    if not USE_REDIS:
-        DEFENDER_REDIS_URL = "memory://"
-    else:
-        DEFENDER_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-
-    DEFENDER_STORE_ACCESS_ATTEMPTS = True
-    DEFENDER_LOCKOUT_URL = "/locked/"
-    DEFENDER_USERNAME_FORM_FIELD = "username"
-    DEFENDER_ENABLE_COOLOFF = True
-    DEFENDER_COOLOFF_TIME = 300
-    DEFENDER_LOGIN_FAILURE_LIMIT = 5
-    DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"
-    DEFENDER_USE_CELERY = False
-    DEFENDER_REDIS_PREFIX = "defender"
+DEFENDER_STORE_ACCESS_ATTEMPTS = True
+DEFENDER_LOCKOUT_URL = "/locked/"
+DEFENDER_USERNAME_FORM_FIELD = "username"
+DEFENDER_ENABLE_COOLOFF = True
+DEFENDER_COOLOFF_TIME = 300
+DEFENDER_LOGIN_FAILURE_LIMIT = 5
+DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"
+DEFENDER_USE_CELERY = False
+DEFENDER_REDIS_PREFIX = "defender"
 
 
 MEDIA_URL = '/media/'
