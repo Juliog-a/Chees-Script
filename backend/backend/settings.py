@@ -47,7 +47,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Necesario para Django Admin
 ]
 
-
 # Template configuration
 TEMPLATES = [
     {
@@ -113,6 +112,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #'django_otp.middleware.OTPMiddleware', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
     'csp.middleware.CSPMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 if not DEBUG:
@@ -133,13 +133,12 @@ DATABASES = {
         'NAME': BASE_DIR / "db.sqlite3",
     }
 }
-
+REDIS_URL = dummy
 USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
 
 if USE_DEFENDER:
     INSTALLED_APPS += ['defender']
     MIDDLEWARE += ['defender.middleware.FailedLoginMiddleware']
-
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -209,7 +208,6 @@ X_FRAME_OPTIONS = 'DENY'  # Evita que la página se cargue en iframes (Clickjack
 
 SECURE_REFERRER_POLICY = "same-origin"  # Evita que el navegador envíe referrers a sitios externos
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies reversos (NGINX)
-
 
 # Configuración de Django Defender
 DEFENDER_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")  # URL de Redis
