@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import FiltroCategorias from "../components/FiltroCategorias";
 import DesafioCard from "../components/DesafioCard";
 import axios from "axios";
+import API from "../api/api";
 
 export default function Desafios() {
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("Todas");
@@ -14,10 +15,10 @@ export default function Desafios() {
 
     const cargarDesafios = () => {
         const url = mostrarFavoritos
-            ? "http://localhost:8000/api/desafios/mis_favoritos/"
-            : "http://localhost:8000/api/desafios/";
+            ? "/desafios/mis_favoritos/"
+            : "/desafios/";
 
-        axios.get(url, {
+        API.get(url, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => setDesafios(response.data))

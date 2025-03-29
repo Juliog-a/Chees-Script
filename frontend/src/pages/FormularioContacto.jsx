@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../api/api";
 
 export default function FormularioContacto() {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export default function FormularioContacto() {
       return;
     }
 
-    fetch("http://localhost:8000/api/user/", {
+    API.get("/user", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
@@ -45,7 +46,7 @@ export default function FormularioContacto() {
       return;
     }
 
-    fetch("http://localhost:8000/api/trofeos/", {
+    API.get("/trofeos", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(response => response.json())
@@ -89,7 +90,7 @@ export default function FormularioContacto() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/contacto/", {
+      const response = await API.post("/contacto/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

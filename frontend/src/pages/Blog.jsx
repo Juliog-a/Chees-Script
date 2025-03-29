@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import PublicacionCard from "../components/PublicacionCard";
+import API from "../api/api";
 
 export default function Blog() {
     const [publicaciones, setPublicaciones] = useState([]);
@@ -17,7 +18,7 @@ export default function Blog() {
     const token = localStorage.getItem("accessToken");
 
     const cargarPublicaciones = () => {
-        axios.get("http://localhost:8000/api/blog/", {
+        API.get("/blog/", {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => setPublicaciones(response.data))
@@ -57,7 +58,7 @@ export default function Blog() {
         };
 
         try {
-            const response = await axios.post("http://localhost:8000/api/blog/", nuevaPublicacion, {
+            const response = await API.post("/blog/", nuevaPublicacion, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 

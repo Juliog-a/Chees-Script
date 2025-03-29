@@ -1,4 +1,5 @@
 import { useState } from "react";
+import API from "../api/api";
 
 const AccountDeleted = ({ onConfirm }) => {
     const [confirmationText, setConfirmationText] = useState("");
@@ -16,7 +17,7 @@ const AccountDeleted = ({ onConfirm }) => {
     
                 console.log("Enviando solicitud DELETE al backend...");
     
-                const response = await fetch("http://127.0.0.1:8000/api/user/delete/", {
+                const response = await API.delete("/user/delete/", {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
                 });

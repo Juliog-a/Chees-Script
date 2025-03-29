@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../utils/AuthContext";
+import API from "../api/api";
 
 const Login = () => {
     // Contexto de autenticación para guardar tokens y actualizar estado global
@@ -32,7 +33,7 @@ const Login = () => {
         setSuccess(null);
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/api/login/", { username, password });
+            const response = await API.post("/login/", { username, password });
 
             if (response.data["2fa_required"]) {
                 setStep("2fa");
@@ -70,8 +71,7 @@ const Login = () => {
         const username = sessionStorage.getItem("tempUsername");
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/api/verify-2fa/", { username, otp_code: otp, temp_token });
-
+            const response = await API.post("/verify-2fa/", { username, otp_code: otp, temp_token });
             if (response.status === 200) {
                 sessionStorage.removeItem("tempToken");
                 sessionStorage.removeItem("tempUsername");
@@ -120,7 +120,7 @@ const Login = () => {
                     )}
 
                     <div className="mt-4">
-                        <button onClick={() => window.location.href = "http://127.0.0.1:8000/api/password_reset/"} className="text-blue-600 hover:underline">He olvidado mi contraseña</button>
+                        <button onClick={() => window.location.href = `${API.defaults.baseURL}/password_reset/`} className="text-blue-600 hover:underline">He olvidado mi contraseña</button>
                         <br />
                         <button onClick={() => navigate("/register")} className="text-blue-600 hover:underline mt-2">No tengo cuenta</button>
                     </div>

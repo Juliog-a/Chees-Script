@@ -4,6 +4,7 @@ import axios from "axios";
 import AccountDeleted from "../components/AccountDeleted.jsx";
 import TwoFactorAuth from "../components/TwoFactorAuth";
 import Trofeos from "../components/Trofeos";
+import API from "../api/api";
 
 const Perfil = () => {
     const navigate = useNavigate();
@@ -40,9 +41,9 @@ const Perfil = () => {
 
     const fetchUserData = async (token) => {
         try {
-            const response = await axios.get("http://127.0.0.1:8000/api/user/", {
+            const response = await API.get("/user/", {
                 headers: { Authorization: `Bearer ${token}` },
-            });
+              });              
     
             setUser({
                 username: response.data.username,
@@ -139,8 +140,7 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
         try {
             const token = localStorage.getItem("accessToken");
     
-            const response = await axios.put(
-                "http://127.0.0.1:8000/api/change-password/",
+            const response = await API.put("/change-password/",
                 {
                     oldPassword,
                     newPassword,
@@ -167,8 +167,7 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
             const token = localStorage.getItem("accessToken");
     
             // Intentar actualizar el perfil
-            const response = await axios.put(
-                "http://127.0.0.1:8000/api/user/update/",
+            const response = await API.put("/user/update/",
                 {
                     profile_image: user.profileImage || undefined,
                     username: user.username !== originalUser.username ? user.username : undefined,
@@ -200,7 +199,7 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
         if (!refreshToken) return;
     
         try {
-            const response = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
+            const response = await API.post("/token/refresh/", {
                 refresh: refreshToken,
             });
     

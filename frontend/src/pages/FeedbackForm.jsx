@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import API from "../api/api";
 
 const FeedbackForm = () => {
     const { desafioId } = useParams();
@@ -21,7 +22,7 @@ const FeedbackForm = () => {
             return;
         }
 
-        axios.get("http://127.0.0.1:8000/api/user/", {
+        API.get("/user/", {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {
@@ -56,7 +57,7 @@ const FeedbackForm = () => {
         const token = localStorage.getItem("accessToken");
     
         try {
-            const response = await axios.post("http://localhost:8000/api/feedbacks/", {
+            const response = await API.post("/feedbacks/", {
                 desafio_id: desafioId,
                 usuario_id: user.id,
                 autor: user.username,
