@@ -133,7 +133,6 @@ DATABASES = {
         'NAME': BASE_DIR / "db.sqlite3",
     }
 }
-REDIS_URL = dummy
 USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
 
 if USE_DEFENDER:
