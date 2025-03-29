@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import API from "../api/api";
+
 
 export default function Home() {
   const [ranking, setRanking] = useState([]);
@@ -10,7 +12,7 @@ export default function Home() {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/home/");
+        const response = await API.get("/home/");
         setRanking(response.data.ranking);
       } catch (err) {
         setError("Error al cargar el ranking.");
