@@ -14,8 +14,8 @@ load_dotenv()
 
 # Django settings for backend project
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-key-for-dev')
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+ALLOWED_HOSTS = ['*'] if DEBUG else ['chees-script.onrender.com']
 ROOT_URLCONF = 'backend.urls'
 
 TAILWIND_APP_NAME = 'theme'
@@ -133,12 +133,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / "db.sqlite3",
-        'USER': os.getenv('DB_USER', 'julio'),
-        'PASSWORD': os.getenv('DB_PASSWORD', '36510756'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
+
+USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
+
+if USE_DEFENDER:
+    INSTALLED_APPS += ['defender']
+    MIDDLEWARE += ['defender.middleware.FailedLoginMiddleware']
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -236,8 +239,12 @@ CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")  # Para c
 
 CSP_IMG_SRC = ("'self'", "data:", "blob:")  # Permitir imágenes en base64 y blobs
 
-CSP_CONNECT_SRC = ("'self'", "http://localhost:8000", "ws://localhost:8000", "http://127.0.0.1:8000", "http://127.0.0.1:5173", "http://localhost:5173") # Permite llamadas a APIs externas (ajusta según tu backend)
-
+CSP_CONNECT_SRC = (
+    "'self'",
+    "https://chees-script.onrender.com",
+    "https://chees-script-jwxnx28mz-julios-projects-679e56eb.vercel.app/",
+    "https://api.vercel.app"
+)
 CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  # Para permitir iframes de videos embebidos
 
 CSP_OBJECT_SRC = ("'none'",)  # Bloquea Flash y otros objetos inseguros
