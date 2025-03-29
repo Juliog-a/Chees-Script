@@ -138,8 +138,8 @@ USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
 
 if USE_DEFENDER and 'defender' not in INSTALLED_APPS:
     INSTALLED_APPS.append('defender')
-if USE_DEFENDER and 'defender.middleware.FailedLoginMiddleware' not in MIDDLEWARE:
-    MIDDLEWARE.insert(1, 'defender.middleware.FailedLoginMiddleware')
+if USE_DEFENDER and 'defender.middleware.LoginFailedMiddleware' not in MIDDLEWARE:
+    MIDDLEWARE.insert(1, 'defender.middleware.LoginFailedMiddleware')
 
 
 if USE_DEFENDER:
