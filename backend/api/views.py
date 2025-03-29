@@ -27,7 +27,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now
-from defender.decorators import watch_login
+#from defender.decorators import watch_login
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
@@ -456,7 +456,7 @@ class FormularioContactoViewSet(viewsets.ModelViewSet):
 class CustomAuthToken(APIView):
     permission_classes = [AllowAny]
 
-    @watch_login  # Proteger contra ataques de fuerza bruta
+    #@watch_login  # Proteger contra ataques de fuerza bruta
     def post(self, request):
         username_or_email = request.data.get("username")
         password = request.data.get("password")
