@@ -135,15 +135,29 @@ DATABASES = {
 }
 USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
 
-if USE_DEFENDER:
-    INSTALLED_APPS += ['defender']
-    MIDDLEWARE.insert(1, 'defender.middleware.FailedLoginMiddleware')
-    DEFENDER_STORE_ACCESS_ATTEMPTS = True  # usa DB para guardar intentos
 
 if USE_DEFENDER and 'defender' not in INSTALLED_APPS:
     INSTALLED_APPS.append('defender')
 if USE_DEFENDER and 'defender.middleware.FailedLoginMiddleware' not in MIDDLEWARE:
     MIDDLEWARE.insert(1, 'defender.middleware.FailedLoginMiddleware')
+
+
+if USE_DEFENDER:
+    # Desactivar Redis por completo
+    import defender.settings as defender_settings
+    defender_settings.DEFENDER_REDIS_URL = None
+# Configuración de Django Defender
+DEFENDER_LOCKOUT_URL = "/locked/"  # Página a la que se redirige al usuario bloqueado
+DEFENDER_USERNAME_FORM_FIELD = "username"  # Campo usado para autenticación
+DEFENDER_ENABLE_COOLOFF = True  # Habilitar tiempo de espera tras intentos fallidos
+DEFENDER_COOLOFF_TIME = 300  # Tiempo de espera en segundos (5 minutos)
+DEFENDER_LOGIN_FAILURE_LIMIT = 5  # Número de intentos antes del bloqueo
+DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"  # Plantilla personalizada de bloqueo
+DEFENDER_USE_CELERY = False  # Desactivar Celery si no lo usas
+DEFENDER_REDIS_PREFIX = "defender"  # Prefijo para claves en Redis
+
+# Si no usas Redis, puedes almacenar los intentos fallidos en la base de datos:
+DEFENDER_STORE_ACCESS_ATTEMPTS = True  # Guarda intentos fallidos en la base de datos
 
 
 MEDIA_URL = '/media/'
@@ -215,20 +229,6 @@ X_FRAME_OPTIONS = 'DENY'  # Evita que la página se cargue en iframes (Clickjack
 SECURE_REFERRER_POLICY = "same-origin"  # Evita que el navegador envíe referrers a sitios externos
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies reversos (NGINX)
 
-# Configuración de Django Defender
-USE_REDIS = os.getenv("USE_REDIS", "false").lower() == "true"
-DEFENDER_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-DEFENDER_LOCKOUT_URL = "/locked/"  # Página a la que se redirige al usuario bloqueado
-DEFENDER_USERNAME_FORM_FIELD = "username"  # Campo usado para autenticación
-DEFENDER_ENABLE_COOLOFF = True  # Habilitar tiempo de espera tras intentos fallidos
-DEFENDER_COOLOFF_TIME = 300  # Tiempo de espera en segundos (5 minutos)
-DEFENDER_LOGIN_FAILURE_LIMIT = 5  # Número de intentos antes del bloqueo
-DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"  # Plantilla personalizada de bloqueo
-DEFENDER_USE_CELERY = False  # Desactivar Celery si no lo usas
-DEFENDER_REDIS_PREFIX = "defender"  # Prefijo para claves en Redis
-
-# Si no usas Redis, puedes almacenar los intentos fallidos en la base de datos:
-DEFENDER_STORE_ACCESS_ATTEMPTS = True  # Guarda intentos fallidos en la base de datos
 
 # CSP (Content Security Policy) -> Para mitigar ataques XSS.
 # CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
