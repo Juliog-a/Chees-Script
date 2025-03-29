@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import API from "./api/api";
+
 export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -14,8 +16,7 @@ export const AuthProvider = ({ children }) => {
             return;
         }
         try {
-            const response = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
-                refresh: refreshToken,
+            const response = await API.post("/token/refresh/", {                refresh: refreshToken,
             });
             if (response.status === 200) {
                 console.log("Token refrescado correctamente.");
@@ -38,9 +39,9 @@ export const AuthProvider = ({ children }) => {
             return;
         }
         try {
-            const response = await axios.get("http://127.0.0.1:8000/api/user/", {
+            const response = await API.get("/user/", {
                 headers: { Authorization: `Bearer ${token}` },
-            });
+              });
             if (response.status === 200) {
                 setIsAuthenticated(true);
             }
