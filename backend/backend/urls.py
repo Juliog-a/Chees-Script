@@ -35,7 +35,7 @@ urlpatterns = [
     ), name='password_reset_complete'),
 
 
-    re_path(r'^.*$', TemplateView.as_view(template_name='index.html'), name='home'),
+    #re_path(r'^.*$', TemplateView.as_view(template_name='index.html'), name='home'),
 ]
 
 if settings.DEBUG:
