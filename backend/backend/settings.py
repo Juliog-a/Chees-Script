@@ -93,7 +93,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api',
-    'defender',
     'tailwind',
     'django_otp',
     'django_otp.plugins.otp_totp',
@@ -114,7 +113,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #'django_otp.middleware.OTPMiddleware', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
     'csp.middleware.CSPMiddleware',
-    'defender.middleware.FailedLoginMiddleware',
 ]
 
 if not DEBUG:
