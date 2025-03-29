@@ -14,8 +14,8 @@ load_dotenv()
 
 # Django settings for backend project
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-key-for-dev')
-DEBUG = True
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+DEBUG = False
+ALLOWED_HOSTS = ["*"]
 
 TAILWIND_APP_NAME = 'theme'
 
