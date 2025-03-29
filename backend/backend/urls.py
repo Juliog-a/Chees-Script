@@ -6,6 +6,7 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from api.views import CustomPasswordResetConfirmView
+from django.http import HttpResponse 
 
 
 
@@ -13,6 +14,7 @@ from api.views import CustomPasswordResetConfirmView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(('api.urls', 'api'), namespace='api')),  # Prefijo '/api/'
+    path('', lambda request: HttpResponse("Backend funcionando")),
 
     path('api/password_reset/', auth_views.PasswordResetView.as_view(
         template_name='registration/password_reset_form.html',

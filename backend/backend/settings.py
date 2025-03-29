@@ -16,6 +16,7 @@ load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-key-for-dev')
 DEBUG = False
 ALLOWED_HOSTS = ["*"]
+ROOT_URLCONF = 'backend.urls'
 
 TAILWIND_APP_NAME = 'theme'
 
