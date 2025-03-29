@@ -191,8 +191,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "https://chees-script.vercel.app",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000"]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000", "https://chees-script.vercel.app",]
 
 CORS_ALLOW_METHODS = [
     "GET",
@@ -203,7 +205,6 @@ CORS_ALLOW_METHODS = [
     "OPTIONS",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
 
 # Seguridad de Cookies en Django
 SESSION_COOKIE_SECURE = not DEBUG  # Solo permite cookies en HTTPS (poner en producción)
