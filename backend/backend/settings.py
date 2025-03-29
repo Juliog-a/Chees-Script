@@ -141,9 +141,11 @@ if USE_DEFENDER:
     DEFENDER_REDIS_URL = None 
     DEFENDER_STORE_ACCESS_ATTEMPTS = True  # usa DB para guardar intentos
 
-if USE_DEFENDER:
-    INSTALLED_APPS += ['defender']
-    MIDDLEWARE += ['defender.middleware.FailedLoginMiddleware']
+if USE_DEFENDER and 'defender' not in INSTALLED_APPS:
+    INSTALLED_APPS.append('defender')
+if USE_DEFENDER and 'defender.middleware.FailedLoginMiddleware' not in MIDDLEWARE:
+    MIDDLEWARE.insert(1, 'defender.middleware.FailedLoginMiddleware')
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
