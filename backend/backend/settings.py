@@ -138,7 +138,6 @@ USE_DEFENDER = os.getenv('USE_DEFENDER', 'true').lower() == 'true'
 if USE_DEFENDER:
     INSTALLED_APPS += ['defender']
     MIDDLEWARE.insert(1, 'defender.middleware.FailedLoginMiddleware')
-    DEFENDER_REDIS_URL = None 
     DEFENDER_STORE_ACCESS_ATTEMPTS = True  # usa DB para guardar intentos
 
 if USE_DEFENDER and 'defender' not in INSTALLED_APPS:
