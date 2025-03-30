@@ -58,7 +58,7 @@ const calculateLevel = (points) => {
     };
 
     return (
-        <nav className="w-full max-w-screen bg-black text-white py-4 px-6 flex items-center justify-between shadow-md fixed top-0 left-0 z-50 overflow-hidden">
+        <nav className="w-full max-w-screen bg-black text-white py-4 px-6 flex items-center justify-between shadow-md fixed top-0 left-0 z-50 md:z-40">
             <Link to="/" className="flex items-center">
                 <img src={logo} alt="Chees Script" className="h-12 cursor-pointer" />
             </Link>
@@ -115,7 +115,7 @@ const calculateLevel = (points) => {
     
             {/* Menú desplegable para móvil */}
             {menuOpen && (
-                <div className="absolute top-20 left-0 w-full bg-black flex flex-col items-center space-y-4 py-4 md:hidden z-50 transition-all duration-300">
+                <div className="absolute top-20 left-0 w-full bg-black flex flex-col items-center space-y-4 py-4 md:hidden z-50 md:z-40 transition-all duration-300">
                     {!isAuthenticated ? (
                         <>
                             <Link to="/" onClick={() => setMenuOpen(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
