@@ -131,7 +131,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
 
             <div className="mt-4 flex flex-col">
                 <h3 className="font-semibold">Comentarios:</h3>
-                <div className="overflow-y-auto max-h-32 pr-2 bg-yellow-200 border border-yellow-400 rounded-md p-2" 
+                <div className="overflow-y-auto max-h-32 pr-2 bg-yellow-200 border border-yellow-500 rounded-md p-2"
                     style={{ scrollbarWidth: "thin" }}>
                     {comentarios.length > 0 ? (
                         comentarios.map((comentario) => (
@@ -154,16 +154,14 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     value={nuevoComentario}
                     maxLength={maxCaracteres}
                     onChange={(e) => setNuevoComentario(e.target.value)}
-                    className="w-full p-2 border mt-2 border-gray-300 rounded-md"
-                />
+                    className="w-full p-2 mt-2 border border-yellow-500 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"                />
 
                 <button 
-                    onClick={enviarComentario} 
-                    className={`mt-2 px-4 py-2 rounded-md ${
-                        nuevoComentario.length === 0 
-                            ? "bg-gray-400 cursor-not-allowed" 
-                            : "bg-black text-yellow-400 hover:bg-gray-900"
-                    }`}
+                className={`mt-2 px-4 py-2 rounded-md font-bold transition ${
+                    nuevoComentario.length === 0 
+                        ? "bg-gray-300 text-gray-600 cursor-not-allowed" 
+                        : "bg-yellow-500 text-black hover:bg-yellow-400"
+                }`}
                     disabled={nuevoComentario.length === 0}
                 >
                     Comentar
