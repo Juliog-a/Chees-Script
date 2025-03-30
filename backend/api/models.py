@@ -80,8 +80,8 @@ class Desafio(models.Model):
 class Trofeo(models.Model):
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField()
-    imagen_bloqueada = models.ImageField(upload_to="trofeos/", blank=True, null=True)
-    imagen_desbloqueada = models.ImageField(upload_to="trofeos/", blank=True, null=True)
+    imagen_bloqueada = models.URLField(max_length=500, blank=True, null=True)  
+    imagen_desbloqueada = models.URLField(max_length=500, blank=True, null=True)
     fecha_obtenido = models.DateTimeField(blank=True, null=True)
     profile = models.ForeignKey("Profile", on_delete=models.CASCADE, blank=True, null=True)
     nivel_requerido = models.IntegerField(null=True, blank=True, default=None)
