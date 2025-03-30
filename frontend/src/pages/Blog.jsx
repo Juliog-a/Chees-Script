@@ -99,7 +99,7 @@ export default function Blog() {
                             placeholder="Título" 
                             value={titulo} 
                             onChange={(e) => setTitulo(e.target.value)}
-                            className="w-full p-2 border mt-2 border-gray-300 rounded-md" 
+                            className="w-full p-2 mt-2 bg-white text-black placeholder-gray-500 border border-yellow-500 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
                             maxLength={maxCaracteresTitulo} 
                         />
                         <div className="text-right text-gray-500 text-sm">{titulo.length}/{maxCaracteresTitulo}</div>
@@ -108,7 +108,7 @@ export default function Blog() {
                             placeholder="Contenido" 
                             value={contenido} 
                             onChange={(e) => setContenido(e.target.value)}
-                            className="w-full p-2 border mt-2 border-gray-300 rounded-md resize-none" 
+                            className="w-full p-2 mt-2 bg-white text-black placeholder-gray-500 border border-yellow-500 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400" 
                             maxLength={maxCaracteresContenido}
                         ></textarea>
                         <div className="text-right text-gray-500 text-sm">{contenido.length}/{maxCaracteresContenido}</div>
@@ -121,7 +121,9 @@ export default function Blog() {
                                 setImagen(e.target.value);
                                 setErrorImagen("");
                             }}
-                            className={`w-full p-2 border mt-2 rounded-md ${errorImagen ? "border-red-500" : "border-gray-300"}`} 
+                            className={`w-full p-2 mt-2 bg-white text-black placeholder-gray-500 border rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 ${
+                                errorImagen ? "border-red-500" : "border-yellow-500"
+                            }`}
                         />
                         {errorImagen && <p className="text-red-600 text-sm mt-1">{errorImagen}</p>}
     
