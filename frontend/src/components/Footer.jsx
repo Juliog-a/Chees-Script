@@ -12,7 +12,7 @@ const Footer = () => {
         </div>
         <div className="mt-4 md:mt-0">
           <h4 className="text-lg font-semibold">Contacto</h4>
-          <p className="text-sm">📧 cheesscript@gmail.com</p>
+          <p className="text-sm"></p>
           <p className="text-sm">📍 Sevilla, España</p>
         </div>
         <div className="mt-4 md:mt-0">
