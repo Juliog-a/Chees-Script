@@ -108,9 +108,13 @@ const calculateLevel = (points) => {
     
             {/* Botón hamburguesa para móvil */}
             <div className="md:hidden">
-                <button onClick={toggleMenu}>
-                    {menuOpen ? "✖" : "☰"}
-                </button>
+                <button
+                onClick={toggleMenu}
+                aria-label="Abrir/cerrar menú"
+                className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold hover:bg-yellow-400 transition"
+                >
+                {menuOpen ? "✖" : "☰"}
+            </button>
             </div>
     
             {/* Menú desplegable para móvil */}
