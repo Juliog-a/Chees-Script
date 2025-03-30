@@ -81,6 +81,9 @@ export const AuthProvider = ({ children }) => {
                 clearInterval(refreshInterval);
                 clearInterval(checkInterval);
             };
+        }  else {
+            console.log("[AuthContext] No hay token. Usuario NO autenticado.");
+            setIsAuthenticated(false);
         }
     }, []);
 

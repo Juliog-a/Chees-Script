@@ -98,7 +98,7 @@ const Trofeos = () => {
               ? trofeo.imagen_actual
               : "/fallback-image.png";
                   
-            const imagenFinal = (imagenUrl && imagenUrl.trim()) ? imagenUrl : "/fallback-image.png";
+            const imagenFinal = imagenUrl && imagenUrl.trim() !== "" ? imagenUrl : "/fallback-image.png";
           
             return (
               <div key={trofeo.id} className="p-4 border rounded-lg shadow-md">
