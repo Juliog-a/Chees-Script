@@ -154,7 +154,8 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     value={nuevoComentario}
                     maxLength={maxCaracteres}
                     onChange={(e) => setNuevoComentario(e.target.value)}
-                    className="w-full p-2 mt-2 border border-yellow-500 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"                />
+                    className="w-full p-2 mt-2 bg-white text-black placeholder-gray-500 border border-yellow-500 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    />
 
                 <button 
                 className={`mt-2 px-4 py-2 rounded-md font-bold transition ${
