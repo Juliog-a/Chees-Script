@@ -7,7 +7,7 @@ const Footer = () => {
         <div>
           <h3 className="text-xl font-bold">Chees Script</h3>
           <p className="text-sm mt-1">
-            Diviertete aprendiendo.
+            Diviértete aprendiendo
           </p>
         </div>
         <div className="mt-4 md:mt-0">
