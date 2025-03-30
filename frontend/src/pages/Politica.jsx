@@ -44,7 +44,7 @@ export default function Politica() {
               .{" "}¡Estaremos encantados de ayudarte!
             </p>
           </div>
-          <div className="mt-8">
+          <div className="mt-8 mb-10">
             <Link
               to="/"
               className="bg-black text-yellow-400 px-6 py-3 text-lg font-bold rounded-md hover:bg-gray-800 transition"
