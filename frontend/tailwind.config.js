@@ -10,5 +10,5 @@ export default {
     extend: {},
   },
   plugins: [],
-  
+  darkMode: false,
 };
