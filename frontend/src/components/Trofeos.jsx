@@ -92,13 +92,12 @@ const Trofeos = () => {
               `Trofeo: ${trofeo.nombre}, Nivel Requerido: ${trofeo.nivel_requerido}, Puntos Usuario: ${userPoints}, Desbloqueado: ${desbloqueado}`
             );
 
-            const imagenUrl = desbloqueado
-              && trofeo.imagen_desbloqueada 
-              && trofeo.imagen_desbloqueada.trim() !== ""
-                ? `${backendURL}${new URL(trofeo.imagen_desbloqueada, backendURL).pathname}`
-              : !desbloqueado && trofeo.imagen_actual && trofeo.imagen_actual.trim() !== ""
-                ? `${backendURL}${new URL(trofeo.imagen_actual, backendURL).pathname}`
-                : "/fallback-image.png";          
+            const imagenUrl = desbloqueado && trofeo.imagen_desbloqueada?.trim()
+            ? trofeo.imagen_desbloqueada
+            : !desbloqueado && trofeo.imagen_actual?.trim()
+              ? trofeo.imagen_actual
+              : "/fallback-image.png";
+                  
             const imagenFinal = (imagenUrl && imagenUrl.trim()) ? imagenUrl : "/fallback-image.png";
           
             return (
