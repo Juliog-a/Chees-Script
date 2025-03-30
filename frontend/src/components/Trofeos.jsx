@@ -7,85 +7,67 @@ const Trofeos = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [completedChallenges, setCompletedChallenges] = useState([]);
   const [previousUnlockedTrophies, setPreviousUnlockedTrophies] = useState(new Set());
-  const calculateLevel = (points) => {
-    return Math.floor(points / 10);
-  };
+
+  const calculateLevel = (points) => Math.floor(points / 10);
 
   const cargarTrofeos = () => {
     const token = localStorage.getItem("accessToken");
-    
     if (!token) {
       console.error("No hay token disponible, el usuario no está autenticado.");
       return;
     }
-  
-    API.post("/trofeos/", {
+
+    API.get("/trofeos/", {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => res.json())
-      .then(async (data) => {
+      .then((res) => {
+        const data = res.data;
         setUserPoints(data.usuario?.puntos || 0);
         setTrofeos(data.trofeos);
         setCompletedChallenges(data.usuario?.desafios_completados || []);
-  
+
         data.trofeos.forEach((trofeo) => {
           if (trofeo.desbloqueado_para_el_usuario && !trofeo.ya_notificado) {
             toast.success(`¡Trofeo desbloqueado! ${trofeo.nombre}`, {
               position: "top-center",
               autoClose: 4000,
             });
-  
-            // Marca en el backend como notificado
-            API.get("/trofeos/", {
-                method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ trofeo_id: trofeo.id }),
+
+            API.post("/trofeos/", { trofeo_id: trofeo.id }, {
+              headers: { Authorization: `Bearer ${token}` },
             })
-            .then(res => res.json())
-            .then(res => console.log(res.mensaje))
-            .catch(err => console.error("Error al marcar notificación:", err));
+              .then((res) => console.log(res.data.mensaje))
+              .catch((err) => console.error("Error al marcar notificación:", err));
           }
         });
       })
       .catch((error) => console.error("Error al cargar los trofeos:", error));
   };
-  
-  
 
   const verificarRespuesta = async (desafioId, respuesta) => {
     const token = localStorage.getItem("accessToken");
-  
+    if (!token) return;
+
     try {
-      const response = await API.post(`/desafios/${desafioId}/verificar_respuesta/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ respuesta }),
-        }
+      const response = await API.post(
+        `/desafios/${desafioId}/verificar_respuesta/`,
+        { respuesta },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        toast.success(data.mensaje);
-        if (data.puntos !== undefined) {
-          setUserPoints(data.puntos);
-          cargarTrofeos();
-        }
-      } else {
-        toast.error(data.mensaje);
+
+      const data = response.data;
+
+      toast.success(data.mensaje);
+      if (data.puntos !== undefined) {
+        setUserPoints(data.puntos);
+        cargarTrofeos();
       }
     } catch (error) {
       console.error("Error al verificar la respuesta:", error);
       toast.error("Error al verificar la respuesta.");
     }
   };
+
   
   // ───────────────────────────────────────────────────────────
   

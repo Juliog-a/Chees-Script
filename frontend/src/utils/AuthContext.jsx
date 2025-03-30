@@ -16,14 +16,21 @@ export const AuthProvider = ({ children }) => {
             return;
         }
         try {
-            const response = await API.post("/token/refresh/", {                refresh: refreshToken,
+            const response = await API.post("/token/refresh/", {                
+                refresh: refreshToken,
             });
             if (response.status === 200) {
                 console.log("Token refrescado correctamente.");
                 localStorage.setItem("accessToken", response.data.access);
                 setAccessToken(response.data.access);
+            
+                if (response.data.refresh) {
+                    localStorage.setItem("refreshToken", response.data.refresh);
+                    setRefreshToken(response.data.refresh);
+                }
+            
                 setIsAuthenticated(true);
-            }
+            }            
         } catch (error) {
             console.error("Error al refrescar el token:", error);
             logout();
@@ -61,12 +68,14 @@ export const AuthProvider = ({ children }) => {
         const refresh = localStorage.getItem("refreshToken");
 
         console.log("AuthContext cargando... Token detectado:", token);
-        setIsAuthenticated(!!token);
+        //setIsAuthenticated(!!token); version anterior de autenticacion ( da problemas con el localstorage)
         setAccessToken(token);
         setRefreshToken(refresh);
 
         if (token) {
-            const refreshInterval = setInterval(refreshAccessToken, 10 * 60 * 1000); // Refrescar token cada 10 minutos para el modo debug
+            checkTokenValidity();
+
+            const refreshInterval = setInterval(refreshAccessToken, 10 * 60 * 1000); // Refrescar token cada 10 minutos
             const checkInterval = setInterval(checkTokenValidity, 50000); // Verificar token cada 50 segundos para evitar llamadas excesivas
             return () => {
                 clearInterval(refreshInterval);
