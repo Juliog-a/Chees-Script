@@ -32,7 +32,7 @@ const FiltroCategorias = ({
                     </button>
                 ))}
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 mt-6 md:mt-0">
                 <button
                     onClick={() => setMostrarFavoritos(!mostrarFavoritos)}
                     className={`px-4 py-2 rounded-md font-semibold transition ${
