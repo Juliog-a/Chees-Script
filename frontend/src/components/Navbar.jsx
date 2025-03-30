@@ -9,7 +9,9 @@ const Navbar = () => {
     const { isAuthenticated, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [userData, setUserData] = useState({ profileImage: "", level: 1 });
-
+    const [menuOpen, setMenuOpen] = useState(false);
+    const toggleMenu = () => setMenuOpen(!menuOpen);
+    
     useEffect(() => {
         if (isAuthenticated) {
             fetchUserData();
@@ -56,12 +58,13 @@ const calculateLevel = (points) => {
     };
 
     return (
-    <nav className="w-full max-w-screen bg-black text-white py-4 px-6 flex items-center justify-between shadow-md fixed top-0 left-0 z-50 overflow-hidden">
+        <nav className="w-full max-w-screen bg-black text-white py-4 px-6 flex items-center justify-between shadow-md fixed top-0 left-0 z-50 overflow-hidden">
             <Link to="/" className="flex items-center">
                 <img src={logo} alt="Chees Script" className="h-12 cursor-pointer" />
             </Link>
-
-            <div className="flex space-x-4 items-center">
+    
+            {/* Menú para escritorio */}
+            <div className="hidden md:flex space-x-4 items-center">
                 {!isAuthenticated ? (
                     <>
                         <Link to="/" className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
@@ -102,8 +105,66 @@ const calculateLevel = (points) => {
                     </>
                 )}
             </div>
+    
+            {/* Botón hamburguesa para móvil */}
+            <div className="md:hidden">
+                <button onClick={toggleMenu}>
+                    {menuOpen ? "✖" : "☰"}
+                </button>
+            </div>
+    
+            {/* Menú desplegable para móvil */}
+            {menuOpen && (
+                <div className="absolute top-20 left-0 w-full bg-black flex flex-col items-center space-y-4 py-4 md:hidden z-50 transition-all duration-300">
+                    {!isAuthenticated ? (
+                        <>
+                            <Link to="/" onClick={() => setMenuOpen(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
+                                Inicio
+                            </Link>
+                            <Link to="/login" onClick={() => setMenuOpen(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
+                                Iniciar sesión
+                            </Link>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/snippets" onClick={() => setMenuOpen(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
+                                Inicio
+                            </Link>
+                            <Link to="/desafios" onClick={() => setMenuOpen(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
+                                Desafíos
+                            </Link>
+                            <Link to="/blog" onClick={() => setMenuOpen(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
+                                Blog
+                            </Link>
+                            <Link to="/contacto" onClick={() => setMenuOpen(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
+                                Contacto
+                            </Link>
+                            <Link to="/perfil" onClick={() => setMenuOpen(false)} className="bg-yellow-500 px-4 py-2 rounded-lg text-black font-bold hover:bg-yellow-400 transition">
+                                Perfil
+                            </Link>
+                            <div className="flex items-center space-x-2 bg-gray-900 px-3 py-1 rounded-lg">
+                                <img
+                                    src={userData.profileImage}
+                                    alt="Perfil"
+                                    className="w-8 h-8 rounded-full border-2 border-white"
+                                />
+                                <span className="text-sm font-semibold">Nivel {userData.level}</span>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    handleLogout();
+                                }}
+                                className="bg-red-500 px-4 py-2 rounded-lg text-white font-bold hover:bg-red-400 transition"
+                            >
+                                Cerrar sesión
+                            </button>
+                        </>
+                    )}
+                </div>
+            )}
         </nav>
-    );
+    );    
 };
 
 export default Navbar;
