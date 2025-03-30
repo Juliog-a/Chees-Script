@@ -15,7 +15,7 @@ load_dotenv()
 
 # Django settings for backend project
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-key-for-dev')
-DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+DEBUG = False
 ALLOWED_HOSTS = ['*'] if DEBUG else ['chees-script.onrender.com']
 ROOT_URLCONF = 'backend.urls'
 

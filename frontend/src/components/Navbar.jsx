@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../utils/AuthContext";
 import axios from "axios";
 import logo from "../assets/logo_cheescript.png";
+import API from "../api/api";
 
 const Navbar = () => {
     const { isAuthenticated, logout } = useContext(AuthContext);
@@ -30,7 +31,7 @@ const calculateLevel = (points) => {
     const fetchUserData = async () => {
         try {
             const token = localStorage.getItem("accessToken");
-            const response = await axios.get("http://127.0.0.1:8000/api/user/", {
+            const response = await API.get("/user/", {
                 headers: { Authorization: `Bearer ${token}` },
             });
     

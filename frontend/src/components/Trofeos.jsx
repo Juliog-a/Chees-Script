@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import API from "../api/api";
 
 const Trofeos = () => {
   const [trofeos, setTrofeos] = useState([]);
@@ -18,7 +19,7 @@ const Trofeos = () => {
       return;
     }
   
-    fetch("http://localhost:8000/api/trofeos/", {
+    API.post("/trofeos/", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -35,8 +36,8 @@ const Trofeos = () => {
             });
   
             // Marca en el backend como notificado
-            fetch("http://localhost:8000/api/trofeos/", {
-              method: "POST",
+            API.get("/trofeos/", {
+                method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
@@ -58,8 +59,7 @@ const Trofeos = () => {
     const token = localStorage.getItem("accessToken");
   
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/desafios/${desafioId}/verificar_respuesta/`,
+      const response = await API.post(`/desafios/${desafioId}/verificar_respuesta/`,
         {
           method: "POST",
           headers: {
@@ -95,7 +95,7 @@ const Trofeos = () => {
     cargarTrofeos();
   }, []);
 
-  const backendURL = "http://localhost:8000";
+  const backendURL = "https://chees-script.onrender.com";
 
   return (
     <div className="w-full flex flex-col items-center">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import API from "../api/api";
 
 const TeoriaPage = () => {
     const { id } = useParams();
@@ -9,7 +10,7 @@ const TeoriaPage = () => {
     const token = localStorage.getItem("accessToken");
 
     useEffect(() => {
-        axios.get(`http://127.0.0.1:8000/api/recursos/?desafio_id=${id}&tipo=teoria`, {
+        API.get(`/recursos/?desafio_id=${id}&tipo=teoria`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {

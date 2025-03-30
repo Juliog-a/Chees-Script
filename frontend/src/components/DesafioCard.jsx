@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import API from "../api/api";
 
 const DesafioCard = ({ desafio }) => {
     const [liked, setLiked] = useState(desafio.liked_by_user);
@@ -9,7 +10,7 @@ const DesafioCard = ({ desafio }) => {
         const token = localStorage.getItem("accessToken");
 
         try {
-            const response = await axios.post(`http://127.0.0.1:8000/api/desafios/${desafio.id}/toggle_like/`, {}, {
+            const response = await API.post(`/desafios/${desafio.id}/toggle_like/`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

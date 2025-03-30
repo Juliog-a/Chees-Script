@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import API from "../api/api";
 
 const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
     const [liked, setLiked] = useState(publicacion.liked_by_user);
@@ -16,7 +17,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
         console.log("Publicacion recibida:", publicacion);
 
         if (!token) return;
-        axios.get("http://127.0.0.1:8000/api/usuario/", {
+        API.get("/usuario/", {
             headers: { Authorization: `Bearer ${token}` },
         })
 
@@ -38,7 +39,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
     const obtenerComentarios = () => {
         if (!token) return; 
     
-        axios.get(`http://127.0.0.1:8000/api/blog/${publicacion.id}/comentarios/`, {
+        API.get(`/blog/${publicacion.id}/comentarios/`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {
@@ -50,8 +51,8 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
         if (!token) return;
 
         try {
-            const response = await axios.post(
-                `http://127.0.0.1:8000/api/blog/${publicacion.id}/toggle_like/`,
+            const response = await API.post(
+               `/blog/${publicacion.id}/toggle_like/`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -67,8 +68,8 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
         if (!nuevoComentario.trim() || !token) return;
     
         try {
-            const response = await axios.post(
-                `http://127.0.0.1:8000/api/blog/${publicacion.id}/comentarios/nuevo/`,
+            const response = await API.post(
+                `/blog/${publicacion.id}/comentarios/nuevo/`,
                 { contenido: nuevoComentario, publicacion_id: publicacion.id },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -88,7 +89,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
         }
 
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/blog/${publicacion.id}/eliminar/`, {
+            await API.delete(`/blog/${publicacion.id}/eliminar/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             window.location.reload();

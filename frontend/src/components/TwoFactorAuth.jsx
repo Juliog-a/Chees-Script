@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import API from "../api/api";
 
 const TwoFactorAuth = () => {
     const [qrCode, setQrCode] = useState(null);
@@ -12,7 +13,7 @@ const TwoFactorAuth = () => {
     }, []);
     const check2FAStatus = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/user/", {
+            const response = await API.get("/user/", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -33,7 +34,7 @@ const TwoFactorAuth = () => {
 
     const handleEnable2FA = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/enable-2fa/", {
+            const response = await API.get("/enable-2fa/", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -61,7 +62,7 @@ const TwoFactorAuth = () => {
         }
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/confirm-2fa/", {
+            const response = await API.post("/confirm-2fa/", {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -101,7 +102,7 @@ const TwoFactorAuth = () => {
         }
     
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/disable-2fa/", {
+            const response = await API.post("/disable-2fa/", {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,

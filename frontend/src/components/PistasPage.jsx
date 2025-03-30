@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import API from "../api/api";
 
 const PistasPage = () => {
     const { id } = useParams();
@@ -10,12 +11,12 @@ const PistasPage = () => {
     const token = localStorage.getItem("accessToken");
 
     useEffect(() => {
-        axios.get(`http://127.0.0.1:8000/api/desafios/${id}/`, {
+        API.get(`/desafios/${id}/`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => setDesafio(response.data))
         .catch(error => console.error("Error al obtener el desafío:", error));
-        axios.get(`http://127.0.0.1:8000/api/recursos/?desafio_id=${id}&tipo=pista`, {
+        API.get(`/recursos/?desafio_id=${id}&tipo=pista`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {

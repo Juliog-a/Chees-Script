@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import API from "../api/api";
 
 const DesafioPage = () => {
     const { id } = useParams();
@@ -11,7 +12,7 @@ const DesafioPage = () => {
     const token = localStorage.getItem("accessToken");
 
     useEffect(() => {
-        axios.get(`http://127.0.0.1:8000/api/desafios/${id}/`, {
+        API.get(`/desafios/${id}/`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {
@@ -29,7 +30,7 @@ const DesafioPage = () => {
 
     const cargarTrofeos = async () => {
         try {
-            const res = await axios.get("http://127.0.0.1:8000/api/trofeos/", {
+            const res = await API.get("/trofeos/", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             console.log("Trofeos recargados:", res.data);
@@ -40,8 +41,8 @@ const DesafioPage = () => {
 
     const verificarRespuesta = async () => {
         try {
-            const response = await axios.post(
-                `http://127.0.0.1:8000/api/desafios/${id}/verificar_respuesta/`,
+            const response = await API.post(
+                `/desafios/${id}/verificar_respuesta/`,
                 { respuesta: respuestaUsuario },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
