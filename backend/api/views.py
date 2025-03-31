@@ -431,32 +431,40 @@ class ComentarioPublicacionViewSet(viewsets.ModelViewSet):
 
 #VIEWS RELACIONADOS CON EL CONTACTO AL USUARIO:
 
-def create(self, request, *args, **kwargs):
-    print("Datos recibidos en el request:", json.dumps(request.data, indent=2))
+class FormularioContactoViewSet(viewsets.ModelViewSet):
+    queryset = FormularioContacto.objects.all()
+    serializer_class = FormularioContactoSerializer
+    permission_classes = [IsAuthenticated]
 
-    usuario = request.user if request.user.is_authenticated else None
-    if not usuario:
-        return Response({"detail": "No autorizado."}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Limitar envío: 1 cada 5 minutos
-    cache_key = f"form_contacto_user_{usuario.id}"
-    if cache.get(cache_key):
-        return Response(
-            {"detail": "Debes esperar 5 minutos antes de volver a enviar un mensaje."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
-        )
+    def create(self, request, *args, **kwargs):
+        print("Datos recibidos en el request:", json.dumps(request.data, indent=2))
 
-    serializer = self.get_serializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(usuario=usuario)
+        usuario = request.user if request.user.is_authenticated else None
+        if not usuario:
+            return Response({"detail": "No autorizado."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Almacenar marca temporal en la caché por 5 minutos (300 segundos)
-        cache.set(cache_key, True, timeout=300)
+        # Limitar envío: 1 cada 5 minutos
+        cache_key = f"form_contacto_user_{usuario.id}"
+        if cache.get(cache_key):
+                return Response(
+                {"detail": "Debes esperar 5 minutos antes de volver a enviar un mensaje."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+        )   
+    
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(usuario=usuario)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    else:
-        print("Errores de validación:", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # Almacenar marca temporal en la caché por 5 minutos (300 segundos)
+            cache.set(cache_key, True, timeout=300)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print("Errores de validación:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 
