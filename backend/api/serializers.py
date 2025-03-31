@@ -72,21 +72,15 @@ class TrofeoSerializer(serializers.ModelSerializer):
         usuario = self.context['request'].user
         return obj.usuarios_notificados.filter(id=usuario.id).exists()
 
-    def get_imagen_actual(self, obj):
-        request = self.context.get('request')
-        imagen_url = obj.imagen_bloqueada.url if obj.imagen_bloqueada else None
-        return request.build_absolute_uri(imagen_url) if request and imagen_url else None
-
     def get_imagen_bloqueada(self, obj):
-        request = self.context.get('request')
-        imagen_url = obj.imagen_bloqueada.url if obj.imagen_bloqueada else None
-        return request.build_absolute_uri(imagen_url) if request and imagen_url else None
+        return obj.imagen_bloqueada
 
     def get_imagen_desbloqueada(self, obj):
-        request = self.context.get('request')
-        imagen_url = obj.imagen_desbloqueada.url if obj.imagen_desbloqueada else None
-        return request.build_absolute_uri(imagen_url) if request and imagen_url else None
+        return obj.imagen_desbloqueada
 
+    def get_imagen_actual(self, obj):
+        return obj.imagen_bloqueada
+    
     def get_desbloqueado_para_el_usuario(self, obj):
         usuario = self.context['request'].user
         desbloqueado = usuario in obj.usuarios_desbloqueados.all()
