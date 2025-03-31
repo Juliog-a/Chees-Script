@@ -249,12 +249,10 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
     }
 
     return (
-        <div className="w-screen min-h-screen flex flex-col items-center justify-center bg-white text-black mt-24">
-            {/* Contenedor principal del perfil */}
-            <div className="w-full max-w-6xl bg-yellow-200 p-12 rounded-lg shadow-lg mt-12">
+        <div className="w-screen min-h-screen flex flex-col items-center bg-white text-black pt-24 pb-20 px-4 sm:px-8">
+            <div className="w-full max-w-6xl bg-yellow-200 p-6 sm:p-10 lg:p-12 rounded-xl shadow-md mt-10">
                 <h2 className="text-5xl font-bold mb-6 text-center text-gray-900">Perfil</h2>
-    
-                <div className="flex items-center justify-center space-x-12">
+                <div className="flex flex-col lg:flex-row items-start justify-between gap-10">
                     {/* Sección Izquierda: Imagen y Nivel */}
                     <div className="flex flex-col items-center">
                         <img
@@ -269,10 +267,8 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
                             <div className="bg-green-500 h-4 rounded-full" style={{ width: `${progress}%` }}></div>
                         </div>
                     </div>
-    
-                    {/* Sección Derecha: Formulario */}
-                    <div className="w-2/3 text-left space-y-6">
-                        <div className="flex flex-col">
+                    <div className="w-full lg:w-2/3 text-left space-y-6 mt-6 lg:mt-0">  
+                          <div className="flex flex-col">
                             <label className="text-lg font-semibold">Nombre:</label>
                             <input
                                 type="text"
@@ -300,7 +296,7 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
                 </div>
     
                 {/* Botones alineados al centro */}
-                <div className="flex justify-center gap-6 mt-8">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-10">
                     <button onClick={handleSave} className="bg-gray-900 text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">
                         Guardar
                     </button>
@@ -317,11 +313,10 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
                 </div>
             </div>
     
-            {/* Sección de Trofeos justo debajo del perfil */}
-            <div className="w-full max-w-6xl bg-yellow-200 p-12 rounded-lg shadow-lg mt-6">
-                <h2 className="text-3xl font-bold text-center text-gray-900"></h2>
-                <Trofeos />
-
+                {/* Sección de Trofeos justo debajo del perfil */}
+                <div className="w-full max-w-6xl bg-yellow-200 p-6 sm:p-10 lg:p-12 rounded-xl shadow-md mt-10">
+                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">🏆 Trofeos Obtenidos</h2>
+                    <Trofeos />
                   {/* Modal para borrar cuenta */}
                   {showDeleteModal && (
                     <AccountDeleted
@@ -334,57 +329,54 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
                         }}
                     />
                 )}
+                    {showPasswordModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                            <div className="bg-white p-8 rounded-md shadow-lg text-center w-96">
+                                <h2 className="text-xl font-bold">Cambiar Contraseña</h2>
+
+                                <input 
+                                    type="password" 
+                                    placeholder="Contraseña Antigua" 
+                                    value={oldPassword} 
+                                    onChange={(e) => setOldPassword(e.target.value)} 
+                                    className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
+                                />
+                                <input 
+                                    type="password" 
+                                    placeholder="Nueva Contraseña" 
+                                    value={newPassword} 
+                                    onChange={(e) => { 
+                                        setNewPassword(e.target.value); 
+                                        validatePassword(e.target.value); 
+                                    }} 
+                                    className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
+                                />
+                    
+                                <input 
+                                    type="password" 
+                                    placeholder="Confirmar Nueva Contraseña" 
+                                    value={confirmPassword} 
+                                    onChange={(e) => setConfirmPassword(e.target.value)} 
+                                    className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
+                                />
+                    
+                                {errorPassword && <p className="text-red-500 mt-2">{errorPassword}</p>}
+                    
+                                <div className="mt-6 flex justify-center gap-6">
+                                    <button onClick={handleChangePassword} className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-900 transition">
+                                        Confirmar
+                                    </button>
+                                    <button onClick={() => setShowPasswordModal(false)} className="bg-gray-500 px-6 py-3 rounded-md text-white font-bold hover:bg-gray-600 transition">
+                                        Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                                </div>
+                            </div>
+                        );    
     
-                {/* Modal para cambiar contraseña */}
-                {showPasswordModal && (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-md shadow-lg text-center w-96">
-            <h2 className="text-xl font-bold">Cambiar Contraseña</h2>
-
-            <input 
-                type="password" 
-                placeholder="Contraseña Antigua" 
-                value={oldPassword} 
-                onChange={(e) => setOldPassword(e.target.value)} 
-                className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
-            />
-
-            <input 
-                type="password" 
-                placeholder="Nueva Contraseña" 
-                value={newPassword} 
-                onChange={(e) => { 
-                    setNewPassword(e.target.value); 
-                    validatePassword(e.target.value); 
-                }} 
-                className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
-            />
-
-            <input 
-                type="password" 
-                placeholder="Confirmar Nueva Contraseña" 
-                value={confirmPassword} 
-                onChange={(e) => setConfirmPassword(e.target.value)} 
-                className="w-full p-3 border mt-4 border-gray-300 rounded-md" 
-            />
-
-            {errorPassword && <p className="text-red-500 mt-2">{errorPassword}</p>}
-
-            <div className="mt-6 flex justify-center gap-6">
-                <button onClick={handleChangePassword} className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-900 transition">
-                    Confirmar
-                </button>
-                <button onClick={() => setShowPasswordModal(false)} className="bg-gray-500 px-6 py-3 rounded-md text-white font-bold hover:bg-gray-600 transition">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-)}
-
-            </div>
-        </div>
-    );    
-    
-}
+                    }
 export default Perfil;
