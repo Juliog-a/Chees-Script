@@ -20,14 +20,12 @@ const FiltroCategorias = ({
 
     return (
         <div className="w-full max-w-[900px] mx-auto mb-6">
-            {/* Toggle filtros en móvil */}
             <div className="flex justify-between items-center mb-4 md:hidden">
-                <h2 className="text-lg font-semibold">Filtros</h2>
                 <button
                     onClick={() => setMostrarFiltros(!mostrarFiltros)}
                     className="bg-black text-yellow-400 px-4 py-2 rounded-md hover:bg-gray-800"
                 >
-                    {mostrarFiltros ? "Ocultar" : "Mostrar"} Filtros
+                    {mostrarFiltros ? "Ocultar Filtros" : "Mostrar Filtros"} 
                 </button>
             </div>
 
