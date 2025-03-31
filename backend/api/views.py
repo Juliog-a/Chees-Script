@@ -197,7 +197,7 @@ class TrofeosUsuarioView(APIView):
 
         Trofeo.check_desafio_completados(usuario)
 
-        trofeos = Trofeo.objects.all()
+        trofeos = Trofeo.objects.all().order_by("id")
         serializer = TrofeoSerializer(trofeos, many=True, context={'request': request})
 
         trofeos_data = serializer.data
