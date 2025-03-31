@@ -29,14 +29,13 @@ export default function FormularioContacto() {
     API.get("/user", {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("No autorizado");
-        return res.json();
-      })
-      .catch(() => {
-        localStorage.removeItem("accessToken");
-        navigate("/login");
-      });
+    .then(() => {
+    })
+    .catch(() => {
+      localStorage.removeItem("accessToken");
+      navigate("/login");
+    });
+
   }, []);
 
   useEffect(() => {
