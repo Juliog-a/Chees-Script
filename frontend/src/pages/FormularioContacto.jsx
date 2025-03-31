@@ -103,9 +103,17 @@ export default function FormularioContacto() {
       setFormData({ email: "", comentario: "", captcha: "" });
       generarCaptcha();
     } catch (err) {
-      console.error("Error al enviar mensaje:", err);
-      setError("Hubo un error al enviar el mensaje.");
+      if (err.response && err.response.status === 429) {
+        setError("Debes esperar unos minutos antes de enviar otro mensaje.");
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError("Hubo un error al enviar el mensaje.");
+      }
+    
+      console.error("Error al enviar el formulario:", err);
     }
+    
   };
 
   return (
