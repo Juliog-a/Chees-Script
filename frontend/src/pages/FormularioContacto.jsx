@@ -97,18 +97,14 @@ export default function FormularioContacto() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      });      
-
-      if (response.ok) {
-        setMensajeExito("Mensaje enviado correctamente.");
-        setFormData({ email: "", comentario: "", captcha: "" });
-        generarCaptcha();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.detail || "Hubo un error al enviar el mensaje.");
-      }
+      });
+    
+      setMensajeExito("Mensaje enviado correctamente.");
+      setFormData({ email: "", comentario: "", captcha: "" });
+      generarCaptcha();
     } catch (err) {
-      setError("Error de conexión con el servidor.");
+      console.error("Error al enviar mensaje:", err);
+      setError("Hubo un error al enviar el mensaje.");
     }
   };
 
