@@ -13,18 +13,13 @@ const TwoFactorAuth = () => {
     }, []);
     const check2FAStatus = async () => {
         try {
-            const response = await API.get("/user/", {
-                method: "GET",
+            const { data } = await API.get("/user/", {
                 headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
             });
-
-            const data = await response.json();
-            if (response.ok) {
-                setIs2FAEnabled(data.is2fa_enabled); 
-            }
+            setIs2FAEnabled(data.is2fa_enabled);
+            
         } catch (error) {
             console.error("Error al consultar estado 2FA:", error.message);
         } finally {
@@ -34,21 +29,11 @@ const TwoFactorAuth = () => {
 
     const handleEnable2FA = async () => {
         try {
-            const response = await API.get("/enable-2fa/", {
-                method: "GET",
+            const { data } = await API.get("/enable-2fa/", {
                 headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Error al activar 2FA:", errorData);
-                return;
-            }
-
-            const data = await response.json();
             setQrCode(data.qr_code);
         } catch (error) {
             console.error("Error al activar 2FA:", error.message);
@@ -62,25 +47,19 @@ const TwoFactorAuth = () => {
         }
 
         try {
-            const response = await API.post("/confirm-2fa/", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ otp_code: otp })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert("2FA activado correctamente.");
-                setIs2FAEnabled(true);
-                setQrCode(null); 
-            } else {
-                alert(`Código incorrecto: ${data.error}`);
-            }
-
+            const { data } = await API.post(
+                "/confirm-2fa/",
+                { otp_code: otp },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            
+            alert("2FA activado correctamente.");
+            setIs2FAEnabled(true);
+            setQrCode(null);            
         } catch (error) {
             console.error("Error en 2FA:", error);
             alert("Error al verificar el código.");
@@ -102,22 +81,18 @@ const TwoFactorAuth = () => {
         }
     
         try {
-            const response = await API.post("/disable-2fa/", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ otp_code }),
-            });
-    
-            const data = await response.json();
-            if (response.ok) {
-                alert("2FA desactivado correctamente.");
-                setIs2FAEnabled(false);
-            } else {
-                alert(`Error: ${data.error}`);
-            }
+            const { data } = await API.post(
+                "/disable-2fa/",
+                { otp_code },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            
+            alert("2FA desactivado correctamente.");
+            setIs2FAEnabled(false);            
         } catch (error) {
             console.error("Error al desactivar 2FA:", error.message);
             alert("Ocurrió un error al intentar desactivar 2FA.");
