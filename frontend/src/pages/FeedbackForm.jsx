@@ -106,8 +106,7 @@ const FeedbackForm = () => {
                 <p className="text-gray-500 text-sm mt-1">Máx. 250 caracteres</p>
 
                 <label className="block text-lg font-semibold mt-4 mb-2">Puntuación:</label>
-                <div className="flex space-x-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
+                <div className="flex flex-wrap justify-center gap-2">                    {[1, 2, 3, 4, 5].map((star) => (
                         <button
                             key={star}
                             type="button"
