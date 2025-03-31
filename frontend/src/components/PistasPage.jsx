@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import API from "../api/api";
 
 const PistasPage = () => {
@@ -59,12 +58,12 @@ const PistasPage = () => {
 
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">💡 Pistas del Desafío</h1>
 
-                <div className="bg-yellow-100 border-l-8 border-yellow-500 rounded-lg shadow-md p-6 sm:p-8 text-base sm:text-lg leading-relaxed">
+                <div className="space-y-4">
                     {recursos.length > 0 ? (
                         recursos.map(recurso => (
-                            <div key={recurso.id} className="mb-6">
-                                <h2 className="text-xl font-semibold text-gray-900">{recurso.nombre}</h2>
-                                <p className="text-gray-800 mt-2 whitespace-pre-line">
+                            <div key={recurso.id} className="bg-yellow-100 border-l-4 border-yellow-500 rounded-md shadow-sm p-4">
+                                <h2 className="text-lg font-semibold text-gray-900">{recurso.nombre}</h2>
+                                <p className="text-sm text-gray-800 mt-2 whitespace-pre-line">
                                     {recurso.contenido}
                                 </p>
                             </div>
