@@ -26,7 +26,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-24">
+    <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-16 md:pt-24">
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-[700px] text-center">
           <h1 className="text-3xl md:text-5xl font-bold">
@@ -64,7 +64,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="mt-8">
+          <div className="mt-8 mb-10 md:mb-0">
             <Link
               to="/desafios"
               className="bg-black text-yellow-400 px-6 py-3 text-lg font-bold rounded-md hover:bg-gray-800 transition"
