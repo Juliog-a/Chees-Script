@@ -26,7 +26,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="w-screen min-h-screen flex flex-col bg-white text-black">
+    <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-24">
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-[700px] text-center">
           <h1 className="text-3xl md:text-5xl font-bold">
