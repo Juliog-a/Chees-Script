@@ -89,17 +89,15 @@ export default function FormularioContacto() {
     }
 
     try {
-      const response = await API.post("/contacto/", {
-        method: "POST",
+      await API.post("/contacto/", {
+        autor: formData.email,
+        mensaje: formData.comentario,
+      }, {
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          autor: formData.email,
-          mensaje: formData.comentario,
-        }),
-      });
+      });      
 
       if (response.ok) {
         setMensajeExito("Mensaje enviado correctamente.");
