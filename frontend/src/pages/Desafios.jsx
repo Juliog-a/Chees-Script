@@ -30,7 +30,7 @@ export default function Desafios() {
     }, [mostrarFavoritos]);
 
     return (
-        <div className="w-screen min-h-screen flex flex-col bg-white text-black px-4 pt-24 overflow-x-hidden">
+        <div className="w-screen min-h-screen flex flex-col bg-white text-black px-4 pt-24 pb-20 overflow-x-hidden">
           <h1 className="text-3xl md:text-5xl font-bold text-center mb-8">Lista de Desafíos</h1>
           {error && <p className="text-red-600 text-center">{error}</p>}
       
