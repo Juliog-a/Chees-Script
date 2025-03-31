@@ -43,12 +43,18 @@ export default function Home() {
               ) : error ? (
                 <p className="text-red-500">{error}</p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-2 text-left">
                   {ranking.length > 0 ? (
                     ranking.map((player, index) => (
-                      <li key={player.id}>
-                        {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}️`}{" "}
-                        <strong>{player.username}</strong> - {player.points} ptos
+                      <li
+                        key={player.id}
+                        className="flex justify-between items-center bg-yellow-100 px-3 py-2 rounded-md"
+                      >
+                        <span className="w-6 text-center">
+                          {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1}
+                        </span>
+                        <span className="flex-1 ml-2 font-semibold truncate">{player.username}</span>
+                        <span className="text-sm text-gray-700">{player.points} ptos</span>
                       </li>
                     ))
                   ) : (
