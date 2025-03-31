@@ -315,7 +315,6 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
     
                 {/* Sección de Trofeos justo debajo del perfil */}
                 <div className="w-full max-w-6xl bg-yellow-200 p-6 sm:p-10 lg:p-12 rounded-xl shadow-md mt-10">
-                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">Trofeos Obtenidos</h2>
                     <Trofeos />
                   {/* Modal para borrar cuenta */}
                   {showDeleteModal && (
