@@ -73,21 +73,21 @@ const FiltroCategorias = ({
                             </button>
 
                             {mostrarTematicas && (
-                                <div className="absolute right-0 mt-2 w-52 max-h-[300px] overflow-y-auto bg-white text-black border border-gray-300 rounded-md shadow-lg z-50">
+                                <div className="absolute right-0 mt-2 w-52 max-h-[300px] overflow-y-auto bg-yellow-50 text-black border border-yellow-300 rounded-md shadow-lg z-50">
                                     {categorias.map((categoria) => (
-                                        <button
-                                            key={categoria}
-                                            onClick={() => {
-                                                setCategoriaSeleccionada(categoria);
-                                                setMostrarTematicas(false);
-                                            }}
-                                            className="block w-full text-left px-4 py-2 text-sm hover:bg-yellow-200 transition"
-                                        >
-                                            {categoria}
-                                        </button>
+                                      <button
+                                        key={categoria}
+                                        onClick={() => {
+                                          setCategoriaSeleccionada(categoria);
+                                          setMostrarTematicas(false);
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-black bg-yellow-50 hover:bg-yellow-200 transition"
+                                      >
+                                        {categoria}
+                                      </button>
                                     ))}
-                                </div>
-                            )}
+                                  </div>
+                                )}
                         </div>
                     </div>
                 </div>
