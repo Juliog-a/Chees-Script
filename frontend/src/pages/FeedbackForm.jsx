@@ -110,7 +110,7 @@ const FeedbackForm = () => {
                         <button
                             key={star}
                             type="button"
-                            className={`text-2xl ${puntuacion >= star ? "text-black" : "text-gray-400"}`}
+                            className={`text-2xl ${puntuacion >= star ? "text-yellow-500" : "text-gray-400"}`}
                             onClick={() => setPuntuacion(star)}
                         >
                             ★

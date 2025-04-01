@@ -21,7 +21,7 @@ class Desafio(models.Model):
         ("XSSI", "XSSI"),
         ("Vulnerabilidades de Configuración", "Vulnerabilidades de Configuración"),
         ("Ajax", "Ajax"),
-        ("Depuración ", "Depuración "),
+        ("Depuración", "Depuración"),
     ]
 
     DIFICULTADES_PERMITIDAS = [
