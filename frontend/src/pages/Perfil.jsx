@@ -252,8 +252,8 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
         <div className="w-screen min-h-screen flex flex-col items-center bg-white text-black pt-24 pb-20 px-4 sm:px-8">
             <div className="w-full max-w-6xl bg-yellow-200 p-6 sm:p-10 lg:p-12 rounded-xl shadow-md mt-10">
                 <h2 className="text-5xl font-bold mb-6 text-center text-gray-900">Perfil</h2>
-                <div className="flex flex-col lg:flex-row items-start justify-between gap-10">
-                    {/* Sección Izquierda: Imagen y Nivel */}
+                <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center lg:justify-between gap-10">
+                {/* Sección Izquierda: Imagen y Nivel */}
                     <div className="flex flex-col items-center">
                         <img
                             src={user.profileImage || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
