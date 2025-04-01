@@ -81,8 +81,8 @@ export default function Blog() {
 
     
     return (
-        <div className="w-screen min-h-screen flex flex-col bg-white text-black p-6 overflow-x-hidden">
-            <h1 className="text-3xl md:text-5xl font-bold text-center mb-8">Blog</h1>
+    <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-24 px-4 overflow-x-hidden">
+        <h1 className="text-3xl md:text-5xl font-bold text-center mb-8">Blog</h1>
             {error && <p className="text-red-600 text-center">{error}</p>}
                 <button 
                 onClick={() => setMostrarFormulario(true)} 
@@ -142,15 +142,7 @@ export default function Blog() {
                     </div>
                 </div>
             )}
-            <div className="grid justify-center"
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
-                    gap: "40px",
-                    alignItems: "start"
-                }}
-            >
-
+                <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 place-items-center mt-8">
                 {publicaciones.length > 0 ? (
                     publicaciones.map((post) => (
                         <PublicacionCard
