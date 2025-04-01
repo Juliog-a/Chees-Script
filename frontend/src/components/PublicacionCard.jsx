@@ -100,11 +100,11 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
     };
 
     return (
-    <div className="bg-yellow-100 p-4 rounded-lg shadow-lg flex flex-col w-full max-w-md mx-auto my-4 sm:px-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Autor: {publicacion.usuario_nombre}</h3>
+        <div className="bg-yellow-100 p-4 rounded-lg shadow-lg flex flex-col w-full max-w-sm mx-auto my-4 sm:px-6 min-h-[700px]">
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">Autor: {publicacion.usuario_nombre}</h3>
             <h2 className="text-xl font-bold break-words w-full">{publicacion.titulo}</h2>
             <p className="break-words whitespace-normal w-full">{publicacion.contenido}</p>
-
+    
             {publicacion.url_imagen && (
                 <img
                     src={publicacion.url_imagen}
@@ -112,27 +112,30 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     className="w-full h-48 object-cover mt-4 rounded-md"
                 />
             )}
-
+    
             <div className="flex justify-between items-center mt-4">
                 <button onClick={toggleLike} className="text-2xl">
                     {liked ? "❤️" : "🤍"}
                 </button>
                 <span className="text-lg font-bold">{likesCount} Likes</span>
             </div>
+    
             {(esPropietario || esAdmin) && (
-                <button 
-                    onClick={eliminarPublicacion} 
+                <button
+                    onClick={eliminarPublicacion}
                     className="bg-red-500 text-white text-xs px-2 py-1 rounded-md hover:bg-red-700 transition shadow-sm mt-4 self-end"
                     title="Eliminar publicación"
                 >
-                Eliminar
+                    Eliminar
                 </button>
             )}
-
+    
             <div className="mt-6 flex flex-col pb-6">
                 <h3 className="font-semibold">Comentarios:</h3>
-                <div className="overflow-y-auto max-h-32 pr-2 bg-yellow-200 border border-yellow-500 rounded-md p-2"
-                    style={{ scrollbarWidth: "thin" }}>
+                <div
+                    className="overflow-y-auto max-h-32 pr-2 bg-yellow-200 border border-yellow-500 rounded-md p-2"
+                    style={{ scrollbarWidth: "thin" }}
+                >
                     {comentarios.length > 0 ? (
                         comentarios.map((comentario) => (
                             <p key={comentario.id} className="break-words text-black">
@@ -144,25 +147,26 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     )}
                 </div>
             </div>
+    
             <div className="mt-auto pb-6">
                 <div className="text-right text-gray-500 text-sm pb-6">
                     {nuevoComentario.length}/{maxCaracteres}
                 </div>
-
+    
                 <textarea
                     placeholder="Escribe un comentario..."
                     value={nuevoComentario}
                     maxLength={maxCaracteres}
                     onChange={(e) => setNuevoComentario(e.target.value)}
                     className="w-full p-2 mt-2 bg-white text-black placeholder-gray-500 border border-yellow-500 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-
-                <button 
-                className={`mt-2 px-4 py-2 rounded-md font-bold transition ${
-                    nuevoComentario.length === 0 
-                        ? "bg-gray-300 text-gray-600 cursor-not-allowed" 
-                        : "bg-yellow-500 text-black hover:bg-yellow-400"
-                }`}
+                />
+    
+                <button
+                    className={`mt-2 px-4 py-2 rounded-md font-bold transition ${
+                        nuevoComentario.length === 0
+                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                            : "bg-yellow-500 text-black hover:bg-yellow-400"
+                    }`}
                     disabled={nuevoComentario.length === 0}
                 >
                     Comentar
