@@ -74,6 +74,12 @@ export default function Terminos() {
             >
               Volver al Inicio
             </Link>
+            <Link
+              to="/"
+              className="bg-black text-yellow-400 px-6 py-3 text-lg font-bold rounded-md hover:bg-gray-800 transition"
+            >
+              Volver al Inicio
+            </Link>
           </div>
         </div>
       </div>
