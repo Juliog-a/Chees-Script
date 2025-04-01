@@ -162,6 +162,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                 />
     
                 <button
+                    onClick={enviarComentario}
                     className={`mt-2 px-4 py-2 rounded-md font-bold transition ${
                         nuevoComentario.length === 0
                             ? "bg-gray-300 text-gray-600 cursor-not-allowed"
