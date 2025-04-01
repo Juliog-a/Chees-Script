@@ -100,7 +100,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
     };
 
     return (
-        <div className="bg-yellow-100 p-4 rounded-lg shadow-lg flex flex-col w-full max-w-[400px] max-h-[750px] sm:h-auto overflow-hidden mx-auto">
+        <div className="bg-yellow-100 p-6 md:p-4 rounded-lg shadow-lg flex flex-col w-full max-w-[400px] overflow-hidden mx-auto my-4">
             <h3 className="text-sm font-semibold text-gray-700 mb-2">Autor: {publicacion.usuario_nombre}</h3>
             <h2 className="text-xl font-bold break-words w-full">{publicacion.titulo}</h2>
             <p className="break-words whitespace-normal w-full">{publicacion.contenido}</p>
@@ -113,7 +113,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                 />
             )}
 
-            <div className="flex justify-between items-center mt-2">
+            <div className="flex justify-between items-center mt-4">
                 <button onClick={toggleLike} className="text-2xl">
                     {liked ? "❤️" : "🤍"}
                 </button>
@@ -129,7 +129,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                 </button>
             )}
 
-            <div className="mt-4 flex flex-col">
+            <div className="mt-6 flex flex-col pb-6">
                 <h3 className="font-semibold">Comentarios:</h3>
                 <div className="overflow-y-auto max-h-32 pr-2 bg-yellow-200 border border-yellow-500 rounded-md p-2"
                     style={{ scrollbarWidth: "thin" }}>
@@ -144,8 +144,8 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     )}
                 </div>
             </div>
-            <div className="mt-auto">
-                <div className="text-right text-gray-500 text-sm">
+            <div className="mt-auto pb-6">
+                <div className="text-right text-gray-500 text-sm pb-6">
                     {nuevoComentario.length}/{maxCaracteres}
                 </div>
 
