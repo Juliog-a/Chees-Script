@@ -100,7 +100,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
     };
 
     return (
-        <div className="bg-yellow-100 p-4 rounded-lg shadow-lg flex flex-col w-[400px] h-[750px] overflow-hidden mx-auto">
+        <div className="bg-yellow-100 p-4 rounded-lg shadow-lg flex flex-col w-full max-w-[400px] max-h-[750px] sm:h-auto overflow-hidden mx-auto">
             <h3 className="text-sm font-semibold text-gray-700 mb-2">Autor: {publicacion.usuario_nombre}</h3>
             <h2 className="text-xl font-bold break-words w-full">{publicacion.titulo}</h2>
             <p className="break-words whitespace-normal w-full">{publicacion.contenido}</p>
