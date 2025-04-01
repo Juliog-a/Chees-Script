@@ -8,7 +8,7 @@ const FeedbackForm = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [comentario, setComentario] = useState("");
-    const [puntuacion, setPuntuacion] = useState(5);
+    const [puntuacion, setPuntuacion] = useState(0);
     const [captcha, setCaptcha] = useState("");
     const [captchaQuestion, setCaptchaQuestion] = useState("");
     const [captchaAnswer, setCaptchaAnswer] = useState(null);
