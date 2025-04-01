@@ -100,8 +100,8 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
     };
 
     return (
-        <div className="bg-yellow-100 p-6 md:p-4 rounded-lg shadow-lg flex flex-col w-full max-w-[400px] overflow-hidden mx-auto my-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Autor: {publicacion.usuario_nombre}</h3>
+    <div className="bg-yellow-100 p-4 rounded-lg shadow-lg flex flex-col w-full max-w-md mx-auto my-4 sm:px-6">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">Autor: {publicacion.usuario_nombre}</h3>
             <h2 className="text-xl font-bold break-words w-full">{publicacion.titulo}</h2>
             <p className="break-words whitespace-normal w-full">{publicacion.contenido}</p>
 
@@ -125,7 +125,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     className="bg-red-500 text-white text-xs px-2 py-1 rounded-md hover:bg-red-700 transition shadow-sm mt-4 self-end"
                     title="Eliminar publicación"
                 >
-                🗑 Eliminar
+                Eliminar
                 </button>
             )}
 
