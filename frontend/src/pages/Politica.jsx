@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 
 export default function Politica() {
   return (
-    <div className="w-screen min-h-screen flex flex-col bg-white text-black">
-      <div className="flex-1 flex items-center justify-center px-4">
+    <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-24 px-4">
+      <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-[700px] text-center">
-          <h1 className="text-3xl md:text-5xl font-bold">Política de Privacidad</h1>
+          <h1 className="text-3xl md:text-5xl font-bold mb-6">Política de Privacidad</h1>
           <div className="mt-6 text-lg md:text-xl space-y-4 text-left">
             <p>
               En <strong>Chees Script</strong>, tu privacidad es esencial. Trabajamos
