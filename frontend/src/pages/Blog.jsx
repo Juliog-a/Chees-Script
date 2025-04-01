@@ -142,7 +142,14 @@ export default function Blog() {
                     </div>
                 </div>
             )}
-                <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 place-items-center mt-8">
+            <div className="grid justify-center"
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+                    gap: "40px",
+                    alignItems: "start"
+                }}
+            >
                 {publicaciones.length > 0 ? (
                     publicaciones.map((post) => (
                         <PublicacionCard
