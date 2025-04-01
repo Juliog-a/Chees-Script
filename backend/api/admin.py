@@ -33,7 +33,7 @@ TEMATICAS_PERMITIDAS = [
     ("XSSI", "XSSI"),
     ("Vulnerabilidades de Configuración", "Vulnerabilidades de Configuración"),
     ("Ajax", "Ajax"),
-    ("Depuración ", "Depuración "),
+    ("Depuración", "Depuración"),
 ]
 
 class DesafioForm(forms.ModelForm):

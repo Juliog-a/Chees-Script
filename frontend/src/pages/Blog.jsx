@@ -81,7 +81,7 @@ export default function Blog() {
 
     
     return (
-    <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-24 px-4 overflow-x-hidden">
+    <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-32 px-4 overflow-x-hidden">
         <h1 className="text-3xl md:text-5xl font-bold text-center mb-8">Blog</h1>
             {error && <p className="text-red-600 text-center">{error}</p>}
                 <button 
