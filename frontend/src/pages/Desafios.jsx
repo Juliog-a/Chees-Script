@@ -10,6 +10,7 @@ export default function Desafios() {
     const [desafios, setDesafios] = useState([]);
     const [mostrarFavoritos, setMostrarFavoritos] = useState(false);
     const [error, setError] = useState("");
+    const [mostrarResueltos, setMostrarResueltos] = useState(false);
 
     const token = localStorage.getItem("accessToken");
 
@@ -41,13 +42,16 @@ export default function Desafios() {
             setDificultadSeleccionada={setDificultadSeleccionada} 
             mostrarFavoritos={mostrarFavoritos}
             setMostrarFavoritos={setMostrarFavoritos}
+            mostrarResueltos={mostrarResueltos}
+            setMostrarResueltos={setMostrarResueltos}
           />
       
           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 place-items-center w-full mt-8">
             {desafios
               .filter(d => 
                 (categoriaSeleccionada === "Todas" || d.tematica === categoriaSeleccionada) &&
-                (dificultadSeleccionada === "Todas" || d.nivel_dificultad === dificultadSeleccionada)
+                (dificultadSeleccionada === "Todas" || d.nivel_dificultad === dificultadSeleccionada) && 
+                (!mostrarResueltos || d.solucionado)
               )
               .map((desafio) => (
                 <DesafioCard key={desafio.id} desafio={desafio} recargarDesafios={cargarDesafios} />

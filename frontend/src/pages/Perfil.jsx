@@ -27,7 +27,8 @@ const Perfil = () => {
     const [passwordStrength, setPasswordStrength] = useState(0);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [errorDelete, setErrorDelete] = useState("");
-    
+    const [updateMessage, setUpdateMessage] = useState("");
+
 
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
@@ -163,6 +164,11 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
     
 
     const handleSave = async () => {
+        if (user.profileImage === originalUser.profileImage) {
+            setUpdateMessage("No se detectaron cambios en la imagen de perfil.");
+            setTimeout(() => setUpdateMessage(""), 3000); // El mensaje desaparece después de 5 segundos
+            return; // Detiene la función si no hay cambios
+        }
         try {
             const token = localStorage.getItem("accessToken");
     
@@ -178,6 +184,8 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
     
             // Si la respuesta es exitosa (200), mostrar mensaje de éxito
             setSuccess("Perfil actualizado correctamente.");
+            setUpdateMessage("La imagen de perfil se ha actualizado correctamente.");
+            setTimeout(() => setUpdateMessage(""), 3000); 
             setErrorPassword("");  // Limpiar error si la actualización es exitosa
             setOriginalUser({ ...user });
     
@@ -290,11 +298,14 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
                                 placeholder="URL de imagen"
                             />
                         </div>
-    
+                    {updateMessage && (
+                        <div className="text-green-500 mt-4 flex justify-center">
+                            <p>{updateMessage}</p>
+                        </div>
+                    )}
                         <TwoFactorAuth />
                     </div>
                 </div>
-    
                 {/* Botones alineados al centro */}
                 <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-10">
                     <button onClick={handleSave} className="bg-gray-900 text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">

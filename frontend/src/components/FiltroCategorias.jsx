@@ -6,7 +6,10 @@ const FiltroCategorias = ({
     dificultadSeleccionada, 
     setDificultadSeleccionada,
     setMostrarFavoritos,
-    mostrarFavoritos
+    mostrarFavoritos,
+    setMostrarResueltos,
+    mostrarResueltos 
+    
 }) => {
     const [mostrarTematicas, setMostrarTematicas] = useState(false);
     const [mostrarFiltros, setMostrarFiltros] = useState(false);
@@ -60,8 +63,16 @@ const FiltroCategorias = ({
                             }`}
                         >
                             ❤️ Favoritos
-                        </button>
-
+                        </button> 
+                        <button
+                            onClick={() => setMostrarResueltos(!mostrarResueltos)}
+                                className={`px-4 py-2 rounded-md font-semibold transition ${
+                                    mostrarResueltos ? "bg-yellow-400 text-black" : "bg-black text-yellow-400 hover:bg-gray-800"
+                                }`}                                
+                                >
+                                 Resueltos
+                                 </button>
+                                 
                         <div className="relative">
                             <button 
                                 onClick={() => setMostrarTematicas(!mostrarTematicas)} 

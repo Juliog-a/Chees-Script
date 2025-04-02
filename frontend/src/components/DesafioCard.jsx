@@ -48,19 +48,19 @@ const DesafioCard = ({ desafio }) => {
               to={`/teoria/${desafio.id}`}
               className="bg-black text-yellow-400 px-4 py-2 rounded w-full sm:w-auto flex-1 flex items-center justify-center"
             >
-              📖 Teoría
+              Teoría
             </Link>
             <Link
               to={`/pistas/${desafio.id}`}
               className="bg-black text-yellow-400 px-4 py-2 rounded w-full sm:w-auto flex-1 flex items-center justify-center"
             >
-              💡 Pistas
+              Pistas
             </Link>
             <Link
               to={`/feedback/${desafio.id}`}
               className="bg-black text-yellow-400 px-4 py-2 rounded w-full sm:w-auto flex-1 flex items-center justify-center"
             >
-              📝 Feedback
+              Feedback
             </Link>
           </div>
     

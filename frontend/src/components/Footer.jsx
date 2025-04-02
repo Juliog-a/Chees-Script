@@ -13,6 +13,10 @@ const Footer = () => {
         <div className="mt-4 md:mt-0">
           <h4 className="text-lg font-semibold">Contacto</h4>
           <p className="text-sm"></p>
+          <p className="text-sm">✉️ ejemplo@cheesscript.com</p>
+          <p className="text-sm">📘 Facebook: CheeseandoelScript</p>
+          <p className="text-sm">📸 Instagram: CheeseandoelScript</p>
+          <p className="text-sm">📞 Teléfono: (+34) 6XX XX XX XX</p>
           <p className="text-sm">📍 Sevilla, España</p>
         </div>
         <div className="mt-4 md:mt-0">
