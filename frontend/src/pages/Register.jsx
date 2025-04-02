@@ -14,7 +14,7 @@ const Register = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const validateEmail = (email) => /@gmail\.com$|@outlook\.com$/.test(email);
+    const validateEmail = (email) => /@gmail\.com$|@outlook\.com$|@alum.us\.es$/.test(email);
     const validateUsername = (username) => /^[a-zA-Z0-9]+$/.test(username);
     const validatePassword = (password) => {
         const minLength = password.length >= 8;
@@ -37,7 +37,7 @@ const Register = () => {
         setError(null);
 
         if (!validateEmail(email)) {
-            setError("Solo se permiten correos de Gmail y Outlook.");
+            setError("Solo se permiten correos de Gmail, Outlook y Alum.us.es.");
             return;
         }
 
@@ -94,22 +94,22 @@ const Register = () => {
                     <form onSubmit={handleRegister} className="flex flex-col space-y-4">
                         <div className="text-left">
                             <label className="block text-lg font-semibold">Usuario:</label>
-                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" />
+                            <input type="text" name="username" value={username} onChange={(e) => setUsername(e.target.value)} required className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" />
                         </div>
                         <div className="text-left">
                             <label className="block text-lg font-semibold">Email:</label>
-                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" />
+                            <input type="email" name="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" />
                         </div>
                         <div className="text-left">
                             <label className="block text-lg font-semibold">Contraseña:</label>
-                            <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); validatePassword(e.target.value); }} required className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" />
+                            <input type="password" name="password" value={password} onChange={(e) => { setPassword(e.target.value); validatePassword(e.target.value); }} required className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" />
                             <div className="w-full h-2 bg-gray-300 rounded-full mt-2">
                                 <div className="h-2 bg-green-500 rounded-full" style={{ width: `${passwordStrength}%` }}></div>
                             </div>
                         </div>
                         <div className="text-left">
                             <label className="block text-lg font-semibold">Confirmar Contraseña:</label>
-                            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" />
+                            <input type="password" name="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" />
                         </div>
                         <button type="submit" className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">
                             Registrarse
