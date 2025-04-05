@@ -48,7 +48,7 @@ const Login = () => {
             login(response.data.access, response.data.refresh, false);
 
             setSuccess("Login exitoso. Redirigiendo...");
-            setTimeout(() => navigate("/perfil"), 1000);
+            navigate("/perfil");
 
         } catch (error) {
             if (error.response?.status === 429) {
@@ -102,9 +102,9 @@ const Login = () => {
 
                     {step === "login" && !isLocked && (
                         <form onSubmit={handleLogin} className="flex flex-col space-y-4">
-                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Usuario/Email" className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" required />
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" required />
-                            <button type="submit" className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">Login</button>
+                            <input type="text" name="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Usuario/Email" className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" required />
+                            <input type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100" required />
+                            <button type="submit" data-testid="login-button" className="bg-black text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">Login</button>
                         </form>
                     )}
 

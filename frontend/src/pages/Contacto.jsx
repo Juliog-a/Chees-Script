@@ -14,7 +14,7 @@ export default function Contacto() {
           </div>
           <div className="mt-8">
             <Link
-              to="/formulario-contacto"
+              to="/formulario-contacto" data-testid="form-button"
               className="bg-black text-yellow-400 px-6 py-3 text-lg font-bold rounded-md hover:bg-gray-800 transition"
             >
               Formulario de contacto

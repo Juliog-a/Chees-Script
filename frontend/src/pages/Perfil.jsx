@@ -311,14 +311,14 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
                     <button onClick={handleSave} className="bg-gray-900 text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">
                         Guardar
                     </button>
-                    <button onClick={() => setShowPasswordModal(true)} className="bg-gray-900 text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">
+                    <button onClick={() => setShowPasswordModal(true)} data-testid="change-button" className="bg-gray-900 text-yellow-400 px-6 py-3 font-bold rounded-md hover:bg-gray-800 transition">
                         Cambiar Contraseña
                     </button>
                 </div>
     
                 {/* Botón de eliminar cuenta centrado y más visible */}
                 <div className="flex justify-center mt-12">
-                    <button onClick={() => setShowDeleteModal(true)} className="bg-red-600 text-white px-8 py-3 font-bold rounded-md hover:bg-red-800 transition">
+                    <button onClick={() => setShowDeleteModal(true)} data-testid="borrar-button" className="bg-red-600 text-white px-8 py-3 font-bold rounded-md hover:bg-red-800 transition">
                         Borrar Cuenta
                     </button>
                 </div>
@@ -340,7 +340,7 @@ const calculateLevel = (points) => {    // Cada 10 puntos aumenta 1 nivel, hasta
                     />
                 )}
                     {showPasswordModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" data-testid="password-modal">
                             <div className="bg-white p-8 rounded-md shadow-lg text-center w-96">
                                 <h2 className="text-xl font-bold">Cambiar Contraseña</h2>
 

@@ -109,7 +109,7 @@ const FeedbackForm = () => {
                 <div className="flex flex-wrap justify-center gap-2">                    {[1, 2, 3, 4, 5].map((star) => (
                         <button
                             key={star}
-                            type="button"
+                            type="button"  data-testid="puntuacion-button" 
                             className={`text-2xl ${puntuacion >= star ? "text-yellow-500" : "text-gray-400"}`}
                             onClick={() => setPuntuacion(star)}
                         >
@@ -121,6 +121,7 @@ const FeedbackForm = () => {
                 <label className="block text-lg font-semibold mt-4 mb-2">{captchaQuestion}</label>
                 <input
                     type="number"
+                    name="captcha"
                     className="w-full p-3 border border-gray-300 rounded-md bg-yellow-100"
                     value={captcha}
                     onChange={(e) => setCaptcha(e.target.value)}

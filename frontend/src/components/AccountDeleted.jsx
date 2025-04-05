@@ -57,6 +57,7 @@ const AccountDeleted = ({ onConfirm }) => {
                     }}
                     className="w-full p-2 mt-8 border border-gray-400 rounded-md text-center bg-white"
                     placeholder='Escribe "CONFIRMO" aquí'
+                    data-testid="confirmation-input"
                 />
 
                 {error && <p className="text-red-500 mt-2">{error}</p>}

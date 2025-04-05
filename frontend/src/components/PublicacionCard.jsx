@@ -100,9 +100,17 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
     };
 
     return (
-        <div className="bg-yellow-100 p-4 rounded-lg shadow-lg flex flex-col w-full max-w-sm mx-auto my-4 sm:px-6 min-h-[700px]">
+        <div
+            className="bg-yellow-100 p-4 rounded-lg shadow-lg flex flex-col w-full max-w-sm mx-auto my-4 sm:px-6 min-h-[700px]"
+            data-testid={`publicacion-${publicacion.id}`}
+            >
             <h3 className="text-sm font-semibold text-gray-700 mb-2">Autor: {publicacion.usuario_nombre}</h3>
-            <h2 className="text-xl font-bold break-words w-full">{publicacion.titulo}</h2>
+                <h2
+                    className="text-xl font-bold break-words w-full"
+                    data-testid={`titulo-post-${publicacion.id}`}
+                    >
+                    {publicacion.titulo}
+                </h2>
             <p className="break-words whitespace-normal w-full">{publicacion.contenido}</p>
     
             {publicacion.url_imagen && (
