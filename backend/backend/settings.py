@@ -16,7 +16,7 @@ load_dotenv()
 # Django settings for backend project
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-key-for-dev')
 DEBUG = False
-ALLOWED_HOSTS = ['*'] if DEBUG else ['chees-script.onrender.com']
+ALLOWED_HOSTS = ['chees-script.onrender.com']
 ROOT_URLCONF = 'backend.urls'
 
 TAILWIND_APP_NAME = 'theme'
@@ -129,12 +129,11 @@ DEFENDER_LOCKOUT_TEMPLATE = "defender/lockout.html"
 DEFENDER_USE_CELERY = False
 DEFENDER_REDIS_PREFIX = "defender"
 
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 5256000  # 2 meses en producción
-else:
-    SECURE_SSL_REDIRECT = False
-    SECURE_HSTS_SECONDS = 0  # No activarlo en desarrollo
+
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000   
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # URLs configuration
 ROOT_URLCONF = 'backend.urls'
@@ -192,8 +191,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
     "https://chees-script.vercel.app",
-    "https://chees-script-6tmzea9s9-julios-projects-679e56eb.vercel.app",
-
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -212,17 +209,16 @@ CORS_ALLOW_METHODS = [
 
 
 # Seguridad de Cookies en Django
-SESSION_COOKIE_SECURE = not DEBUG  # Solo permite cookies en HTTPS (poner en producción)
+SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True  # Evita que las cookies sean accesibles por JavaScript
 SESSION_COOKIE_SAMESITE = 'Lax'  # Evita envío de cookies en peticiones de otros sitios
-CSRF_COOKIE_SECURE = not DEBUG  # Protege la cookie de CSRF en HTTPS
+CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True  # No accesible por JavaScript
 CSRF_COOKIE_SAMESITE = 'Lax'  # Protege contra ataques CSRF
 
 SECURE_BROWSER_XSS_FILTER = True  # Protección contra XSS en navegadores
 SECURE_CONTENT_TYPE_NOSNIFF = True  # Previene ataques de MIME sniffing
 X_FRAME_OPTIONS = 'DENY'  # Evita que la página se cargue en iframes (Clickjacking)
-
 SECURE_REFERRER_POLICY = "same-origin"  # Evita que el navegador envíe referrers a sitios externos
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies reversos (NGINX)
 
@@ -231,7 +227,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies re
 # CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
 CSP_DEFAULT_SRC = ("'self'",)  # Solo permite recursos del mismo dominio
 
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'") if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'",) if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
 
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")  # Tailwind usa estilos inline, por eso permitimos 'unsafe-inline'
 
@@ -246,6 +242,9 @@ CSP_CONNECT_SRC = (
     "https://api.vercel.app"
 )
 CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  # Para permitir iframes de videos embebidos
+CSP_BASE_URI = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)
+CSP_MEDIA_SRC = ("'self'",)
 
 CSP_OBJECT_SRC = ("'none'",)  # Bloquea Flash y otros objetos inseguros
 
