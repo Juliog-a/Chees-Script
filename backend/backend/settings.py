@@ -195,7 +195,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000", "https://chees-script.vercel.app",    "https://chees-script-6tmzea9s9-julios-projects-679e56eb.vercel.app",
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000", "https://chees-script.vercel.app",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -227,9 +227,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies re
 # CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
 CSP_DEFAULT_SRC = ("'self'",)  # Solo permite recursos del mismo dominio
 
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'",) if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
+CSP_SCRIPT_SRC = ("'self'",)
 
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")  # Tailwind usa estilos inline, por eso permitimos 'unsafe-inline'
+CSP_STYLE_SRC = ("'self'", "fonts.googleapis.com")  # Tailwind usa estilos inline, por eso permitimos 'unsafe-inline'
 
 CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")  # Para cargar fuentes desde Google Fonts
 
@@ -238,7 +238,6 @@ CSP_IMG_SRC = ("'self'", "data:", "blob:")  # Permitir imágenes en base64 y blo
 CSP_CONNECT_SRC = (
     "'self'",
     "https://chees-script.onrender.com",
-    "https://chees-script-jwxnx28mz-julios-projects-679e56eb.vercel.app/",
     "https://api.vercel.app"
 )
 CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  # Para permitir iframes de videos embebidos
