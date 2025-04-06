@@ -20,7 +20,7 @@ ALLOWED_HOSTS = ['chees-script.onrender.com']
 ROOT_URLCONF = 'backend.urls'
 
 TAILWIND_APP_NAME = 'theme'
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),  # Archivos estáticos del frontend
@@ -195,7 +195,10 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000", "https://chees-script.vercel.app",
+CSRF_TRUSTED_ORIGINS = [    
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:5173", "http://127.0.0.1:8000", "https://chees-script.vercel.app",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -227,15 +230,19 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies re
 # CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
 CSP_DEFAULT_SRC = ("'self'",)  # Solo permite recursos del mismo dominio
 
-CSP_SCRIPT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'") if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
 
-CSP_STYLE_SRC = ("'self'", "fonts.googleapis.com")  # Tailwind usa estilos inline, por eso permitimos 'unsafe-inline'
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")  # deja Tailwind y estilos inline funcionar
 
 CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")  # Para cargar fuentes desde Google Fonts
 
 CSP_IMG_SRC = ("'self'", "data:", "blob:")  # Permitir imágenes en base64 y blobs
 
 CSP_CONNECT_SRC = (
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
     "'self'",
     "https://chees-script.onrender.com",
     "https://api.vercel.app"
