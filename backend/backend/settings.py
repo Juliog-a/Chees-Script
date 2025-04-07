@@ -197,9 +197,11 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [    
+    "https://chees-script.vercel.app",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
-    "http://localhost:5173", "http://127.0.0.1:8000", "https://chees-script.vercel.app",
+    "http://localhost:5173", 
+    "http://127.0.0.1:8000", 
 ]
 
 CORS_ALLOW_METHODS = [
@@ -231,7 +233,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies re
 # CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
 CSP_DEFAULT_SRC = ("'self'",)  # Solo permite recursos del mismo dominio
 
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'") if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://vercel.live") if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
 
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")  # deja Tailwind y estilos inline funcionar
 
