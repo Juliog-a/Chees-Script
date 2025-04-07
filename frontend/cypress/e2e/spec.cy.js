@@ -216,7 +216,7 @@ describe('Flujo de navegación de usuario', () => {
       cy.get('button[type="submit"]').click();
       cy.get('[data-testid="login-button"]').click();
       cy.wait(3000);
-    });
+    }); 
   
     it('Creación de una nueva publicación', () => {
       cy.visit('http://localhost:5173/blog');
@@ -240,7 +240,6 @@ describe('Flujo de navegación de usuario', () => {
       cy.visit('http://localhost:5173/login');
       cy.get('input[name="username"]').type('UsuarioTest');
       cy.get('input[name="password"]').type('contraseñaSegura123_');
-      cy.get('button[type="submit"]').click();
       cy.get('[data-testid="login-button"]').click();
       cy.wait(3000);
       cy.visit('http://localhost:5173/blog');
@@ -258,7 +257,6 @@ describe('Flujo de navegación de usuario', () => {
       cy.visit('http://localhost:5173/login');
       cy.get('input[name="username"]').type('UsuarioTest');
       cy.get('input[name="password"]').type('contraseñaSegura123_');
-      cy.get('button[type="submit"]').click();
       cy.get('[data-testid="login-button"]').click();
       cy.wait(3000);
       cy.visit('http://localhost:5173/blog');

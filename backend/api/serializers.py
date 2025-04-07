@@ -120,6 +120,7 @@ class ComentarioPublicacionSerializer(serializers.ModelSerializer):
         """ Evita que los comentarios sean mayores a 100 caracteres """
         if len(value) > 100:
             raise serializers.ValidationError("El comentario no puede superar los 100 caracteres.")
+        value = bleach.clean(value, tags=[], strip=True)
         return value
 
 
@@ -136,8 +137,14 @@ class PublicacionSerializer(serializers.ModelSerializer):
 
     contenido = serializers.CharField(
         max_length=130,
-        error_messages={"max_length": "El contenido no puede superar los 200 caracteres."}
+        error_messages={"max_length": "El contenido no puede superar los 130 caracteres."}
     )
+
+    titulo = serializers.CharField(
+        max_length=32,
+        error_messages={"max_length": "El título no puede superar los 32 caracteres."}
+    )
+
 
     class Meta:
         model = Publicacion
@@ -149,23 +156,18 @@ class PublicacionSerializer(serializers.ModelSerializer):
     def validate_contenido(self, value):
         if len(value) > 200:
             raise serializers.ValidationError("El contenido no puede tener más de 200 caracteres.")
-        value = bleach.clean(value)
-        return value
+        return bleach.clean(value, tags=[], strip=True)
 
-
-    def validate_url_imagen(self, value):
-        """ Valida que la URL sea una imagen válida """
     def validate_url_imagen(self, value):
         """ Valida que la URL sea segura y apunte a una imagen """
         if value:
-            regex = r"^https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg)$"
+            regex = r"^https?:\/\/[^\s]+?\.(png|jpg|jpeg|gif|bmp|webp|svg)$"
             if not re.match(regex, value, re.IGNORECASE):
-                raise serializers.ValidationError("La URL debe ser una imagen válida (png, jpg, jpeg, gif, bmp, webp, svg).")
-            # Prevenir URLs sospechosas (evitar inyecciones)
-            if "javascript:" in value or "data:" in value:
-                raise serializers.ValidationError("URL inválida por razones de seguridad.")
-        
+                raise serializers.ValidationError("La URL debe ser una imagen válida.")
+            if "javascript:" in value.lower() or "data:" in value.lower():
+                raise serializers.ValidationError("La URL no puede contener esquemas inseguros.")
         return value
+
     
     def get_liked_by_user(self, obj):
         """Devuelve `True` si el usuario autenticado ha dado like, `False` en caso contrario."""
@@ -174,6 +176,8 @@ class PublicacionSerializer(serializers.ModelSerializer):
             return request.user in obj.likes.all()
         return False
     
+    def validate_titulo(self, value):
+        return bleach.clean(value, tags=[], strip=True)
 
     def validate(self, data):
         """ Verifica que la publicación tenga título y contenido """
