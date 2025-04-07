@@ -154,8 +154,8 @@ class PublicacionSerializer(serializers.ModelSerializer):
         ]
 
     def validate_contenido(self, value):
-        if len(value) > 200:
-            raise serializers.ValidationError("El contenido no puede tener más de 200 caracteres.")
+        if len(value) > 130:
+            raise serializers.ValidationError("El contenido no puede tener más de 130 caracteres.")
         return bleach.clean(value, tags=[], strip=True)
 
     def validate_url_imagen(self, value):
