@@ -117,11 +117,17 @@ class ComentarioPublicacionSerializer(serializers.ModelSerializer):
         fields = ["id", "contenido", "fecha_publicacion", "autor", "usuario", "publicacion_id"]
 
     def validate_contenido(self, value):
-        """ Evita que los comentarios sean mayores a 100 caracteres """
+        """ Evita comentarios vacíos o maliciosos """
+        value = bleach.clean(value, tags=[], strip=True).strip()
+
+        if not value:
+            raise serializers.ValidationError("El comentario no puede estar vacío o contener solo contenido no permitido.")
+
         if len(value) > 100:
             raise serializers.ValidationError("El comentario no puede superar los 100 caracteres.")
-        value = bleach.clean(value, tags=[], strip=True)
+
         return value
+
 
 
 class PublicacionSerializer(serializers.ModelSerializer):
