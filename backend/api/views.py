@@ -394,11 +394,15 @@ class PublicacionViewSet(viewsets.ModelViewSet):
             "likes_count": publicacion.likes.count()  # Devuelve el número actualizado de likes
         }, status=status.HTTP_200_OK)
 
+class ComentarioUserRateThrottle(UserRateThrottle):
+    # Limita a 5 solicitudes por minuto para cada usuario autenticado.
+    rate = '5/minute'
 
 class ComentarioPublicacionViewSet(viewsets.ModelViewSet):
     """ API para manejar comentarios de publicaciones """
     serializer_class = ComentarioPublicacionSerializer
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ComentarioUserRateThrottle]
 
     def get_queryset(self):
         """ Filtra comentarios por publicación específica """

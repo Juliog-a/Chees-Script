@@ -11,12 +11,9 @@ export default function Blog() {
     const [contenido, setContenido] = useState("");
     const [imagen, setImagen] = useState("");
     const [errorImagen, setErrorImagen] = useState("");
-
     const maxCaracteresContenido = 130;
     const maxCaracteresTitulo = 32;
-    
     const token = localStorage.getItem("accessToken");
-
     const cargarPublicaciones = () => {
         API.get("/blog/", {
             headers: { Authorization: `Bearer ${token}` }
@@ -27,16 +24,14 @@ export default function Blog() {
             setError("No se pudieron cargar las publicaciones.");
         });
     };
-
     useEffect(() => {
         cargarPublicaciones();
     }, []);
-    
+
     const validarURLImagen = (url) => {
         const regex = /^https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg)$/i;
         return regex.test(url);
     };
-
     const handlePublicar = async () => {
         if (!titulo || !contenido) {
             alert("Título y contenido son obligatorios.");
@@ -50,18 +45,15 @@ export default function Blog() {
             setErrorImagen("La URL debe ser una imagen válida (png, jpg, jpeg, gif, bmp, webp, svg).");
             return;
         }
-
         const nuevaPublicacion = {
             titulo,
             contenido,
             url_imagen: imagen && imagen.length > 0 ? imagen : "",
         };
-
         try {
             const response = await API.post("/blog/", nuevaPublicacion, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-
             setPublicaciones([response.data, ...publicaciones]); 
             setMostrarFormulario(false);
             setTitulo("");
@@ -77,8 +69,6 @@ export default function Blog() {
             }
         }
     };
-
-
     
     return (
     <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-32 px-4 overflow-x-hidden">
