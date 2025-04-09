@@ -231,16 +231,11 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Para proxies re
 
 # CSP (Content Security Policy) -> Para mitigar ataques XSS.
 # CSP CONFIGURACIÓN ADAPTADA A REACT + TAILWIND
-CSP_DEFAULT_SRC = ("'self'",)  # Solo permite recursos del mismo dominio
-
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://vercel.live") if not DEBUG else ("'self'", "'unsafe-inline'", "'unsafe-eval'")# React usa 'unsafe-eval' en desarrollo, pero quítalo en producción
-
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")  # deja Tailwind y estilos inline funcionar
-
-CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")  # Para cargar fuentes desde Google Fonts
-
-CSP_IMG_SRC = ("'self'", "data:", "blob:")  # Permitir imágenes en base64 y blobs
-
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://vercel.live")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com") 
+CSP_FONT_SRC = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com") 
+CSP_IMG_SRC = ("'self'", "data:", "blob:") 
 CSP_CONNECT_SRC = (
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -250,17 +245,13 @@ CSP_CONNECT_SRC = (
     "https://chees-script.onrender.com",
     "https://api.vercel.app"
 )
-CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  # Para permitir iframes de videos embebidos
+CSP_FRAME_SRC = ("'self'", "youtube.com", "vimeo.com")  
 CSP_BASE_URI = ("'self'",)
 CSP_FRAME_ANCESTORS = ("'none'",)
 CSP_MEDIA_SRC = ("'self'",)
-
-CSP_OBJECT_SRC = ("'none'",)  # Bloquea Flash y otros objetos inseguros
-
+CSP_OBJECT_SRC = ("'none'",)  
 CSP_FORM_ACTION = ("'self'",
     'http://localhost:5173',
-    )  # Evita envíos de formularios a dominios externos
-
-CSP_WORKER_SRC = ("'self'", "blob:")  # Permite Web Workers y Service Workers (importante para PWA)
-
-CSP_MANIFEST_SRC = ("'self'",)  # Permite cargar manifest.json en React PWA
+    ) 
+CSP_WORKER_SRC = ("'self'", "blob:")  
+CSP_MANIFEST_SRC = ("'self'",)  

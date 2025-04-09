@@ -73,7 +73,7 @@ describe('Flujo de Login de Usuario', () => {
   //PRUEBAS DE LOGIN
   it('Fallo contraseñas invalidas', () => {
     cy.visit('http://localhost:5173/login');
-    cy.get('input[name="username"]').type('UsuarioTest'); //en cada prueba debo actualizar este campo
+    cy.get('input[name="username"]').type('UsuarioTest');
     cy.get('input[name="password"]').type('contraseñamala');
     cy.get('button[type="submit"]').click();
     cy.get('[data-testid="login-button"]').click();
@@ -123,8 +123,6 @@ describe('Rutas protegidas - redirección al login si no estás autenticado', ()
 
 
 describe('Flujo de navegación de usuario', () => {
-  
-  
     //PRUEBAS DE NAVEGACIÓN
     it('debería navegar entre todas las páginas correctamente', () => {
       cy.visit('http://localhost:5173/login');
@@ -145,7 +143,6 @@ describe('Flujo de navegación de usuario', () => {
       cy.url().should('include', '/contacto');
       cy.wait(3000); 
     });
-
   });
 
 
@@ -235,7 +232,7 @@ describe('Flujo de navegación de usuario', () => {
         Cypress.env('idPublicacionCreada', id);
       });
     });
-  
+   
     it('Agregar un comentario a la publicación', () => {
       cy.visit('http://localhost:5173/login');
       cy.get('input[name="username"]').type('UsuarioTest');
@@ -258,10 +255,10 @@ describe('Flujo de navegación de usuario', () => {
       cy.get('input[name="username"]').type('UsuarioTest');
       cy.get('input[name="password"]').type('contraseñaSegura123_');
       cy.get('[data-testid="login-button"]').click();
-      cy.wait(3000);
+      cy.wait(2000);
       cy.visit('http://localhost:5173/blog');
-      cy.wait(4000);
-  
+      cy.wait(2000);
+      cy.url().should('not.include', '/login');
       const id = Cypress.env('idPublicacionCreada');
       cy.get(`[data-testid="publicacion-${id}"]`).scrollIntoView().within(() => {
         cy.get('button').contains('🤍').click();
@@ -447,7 +444,9 @@ describe('Flujo de navegación de usuario', () => {
 
       it('Muestra el trofeo de Julio César en el perfil tras resolver el desafío', () => {
         cy.visit('http://localhost:5173/perfil');
+        cy.wait(6000);
         cy.contains('Trofeos').scrollIntoView();
+        cy.wait(2000);
         cy.contains('Has descifrado el método que usaba Julio Cesar!').should('be.visible');
       });
 
