@@ -99,7 +99,6 @@ INSTALLED_APPS = [
     'django_otp',
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_static',
-    #'two_factor', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
     'rest_framework_simplejwt.token_blacklist',
     'django_password_validators.password_history',
 ]
@@ -113,7 +112,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'django_otp.middleware.OTPMiddleware', #Da fallos en la interfaz predeterminada de Django de admin al usarlo, por lo que no descomentar
     'csp.middleware.CSPMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]

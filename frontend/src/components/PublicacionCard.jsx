@@ -76,7 +76,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
             );
     
             setNuevoComentario("");
-            setErrorComentario(""); // Limpiar error al éxito
+            setErrorComentario("");
             setComentarios(prevComentarios => [...prevComentarios, response.data]);
         } catch (error) {
             console.error("Error al enviar comentario:", error.response ? error.response.data : error);
@@ -86,7 +86,6 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                         "Has superado el límite de comentarios permitidos (5 por minuto). Por favor, espera unos instantes antes de comentar nuevamente."
                     );
                 } else if (error.response.data) {
-                    // Primero, si existe un mensaje para el campo "contenido", úsalo
                     if (error.response.data.contenido && error.response.data.contenido.length > 0) {
                         setErrorComentario(error.response.data.contenido[0]);
                     } else if (error.response.data.detail) {
@@ -94,7 +93,6 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     } else if (error.response.data.message) {
                         setErrorComentario(error.response.data.message);
                     } else {
-                        // En caso de 400 sin mensaje específico, mensaje por defecto
                         setErrorComentario("Tu comentario tiene contenido prohibido, por lo que no puede ser publicado.");
                     }
                 } else {

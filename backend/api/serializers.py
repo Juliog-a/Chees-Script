@@ -126,6 +126,14 @@ class ComentarioPublicacionSerializer(serializers.ModelSerializer):
         if len(value) > 100:
             raise serializers.ValidationError("El comentario no puede superar los 100 caracteres.")
 
+        patrones_peligrosos = [
+        r"(--|\b(SELECT|INSERT|DELETE|UPDATE|DROP|UNION|ALTER|EXEC|OR|AND)\b)",
+        r"(;|#)", 
+        ]
+        for patron in patrones_peligrosos:
+            if re.search(patron, value, re.IGNORECASE):
+                raise serializers.ValidationError("El comentario contiene patrones no permitidos.")
+
         return value
 
 
@@ -199,13 +207,19 @@ class FormularioFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormularioFeedback
         fields = ["id", "autor", "codigo", "fecha_envio", "puntuacion", "desafio_id", "usuario_id"]
-    def validate_codigo(self, value):
-        """ Evita que se inyecten scripts maliciosos en el código enviado """
-        if "<script>" in value or "</script>" in value:
-            raise serializers.ValidationError("El código no puede contener scripts.")
-        # Escapa caracteres peligrosos usando bleach
-        value = bleach.clean(value)
-        return value
+        def validate_codigo(self, value):
+            value = bleach.clean(value).strip()
+            if not value:
+                raise serializers.ValidationError("El código no puede estar vacío.")
+            patrones_peligrosos = [
+                r"(--|\b(SELECT|INSERT|DELETE|UPDATE|DROP|UNION|ALTER|EXEC|OR|AND)\b)",
+                r"(;|#)", 
+            ]
+            for patron in patrones_peligrosos:
+                if re.search(patron, value, re.IGNORECASE):
+                    raise serializers.ValidationError("El código contiene patrones no permitidos.")
+            return value
+
 
 
 class FormularioContactoSerializer(serializers.ModelSerializer):
@@ -214,13 +228,20 @@ class FormularioContactoSerializer(serializers.ModelSerializer):
         fields = ["usuario", "autor", "mensaje", "estado", "fecha_envio"]
         read_only_fields = ["estado", "fecha_envio"]
 
-    def validate(self, data):
-        """
-        Si el usuario no está autenticado, `usuario` será `None`.
-        """
-        if "usuario" not in data:
-            data["usuario"] = None
-        return data
+        def validate(self, data):
+            mensaje = data.get("mensaje", "").strip()
+            if not mensaje:
+                raise serializers.ValidationError({"mensaje": "El mensaje no puede estar vacío."})
+                                
+            patrones_peligrosos = [
+                r"(--|\b(SELECT|INSERT|DELETE|UPDATE|DROP|UNION|ALTER|EXEC|OR|AND)\b)",
+                r"(;|#)", 
+            ]
+            for patron in patrones_peligrosos:
+                if re.search(patron, mensaje, re.IGNORECASE):
+                    raise serializers.ValidationError({"mensaje": "El mensaje contiene contenido no permitido."})
+            return data
+
 
 
 
