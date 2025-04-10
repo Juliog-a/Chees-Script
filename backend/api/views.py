@@ -395,8 +395,11 @@ class PublicacionViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_200_OK)
 
 class ComentarioUserRateThrottle(UserRateThrottle):
-    # Limita a 5 solicitudes por minuto para cada usuario autenticado.
     rate = '5/minute'
+    def allow_request(self, request, view):
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
+        return super().allow_request(request, view)
 
 class ComentarioPublicacionViewSet(viewsets.ModelViewSet):
     """ API para manejar comentarios de publicaciones """
