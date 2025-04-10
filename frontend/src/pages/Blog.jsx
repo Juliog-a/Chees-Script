@@ -60,12 +60,19 @@ export default function Blog() {
             setContenido("");
             setImagen("");
             setErrorImagen("");
+            setError("");
         } catch (error) {
             console.error("Error al publicar:", error.response?.data || error);
-            if (error.response?.data?.url_imagen) {
+            
+            if (error.response?.status === 429) {
+                setError("Has superado el límite de comentarios permitidos (5 por minuto). Por favor, espera unos instantes antes de intentar nuevamente.");
+            }
+            else if (error.response?.data?.contenido) {
+                setError(error.response.data.contenido[0]);
+            } else if (error.response?.data?.url_imagen) {
                 setErrorImagen(error.response.data.url_imagen[0]); 
             } else {
-                setError("Hubo un problema al publicar.");
+                setError("Hubo un problema al publicar. Inténtalo nuevamente.");
             }
         }
     };
