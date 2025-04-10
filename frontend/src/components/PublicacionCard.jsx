@@ -7,6 +7,7 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
     const [likesCount, setLikesCount] = useState(publicacion.likes_count);
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentario, setNuevoComentario] = useState("");
+    const [errorComentario, setErrorComentario] = useState("");
     const [esPropietario, setEsPropietario] = useState(false);
     const [esAdmin, setEsAdmin] = useState(false);
 
@@ -75,11 +76,35 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
             );
     
             setNuevoComentario("");
+            setErrorComentario(""); // Limpiar error al éxito
             setComentarios(prevComentarios => [...prevComentarios, response.data]);
         } catch (error) {
-            console.error("Error al enviar comentario:", error);
+            console.error("Error al enviar comentario:", error.response ? error.response.data : error);
+            if (error.response) {
+                if (error.response.status === 429) {
+                    setErrorComentario(
+                        "Has superado el límite de comentarios permitidos (5 por minuto). Por favor, espera unos instantes antes de comentar nuevamente."
+                    );
+                } else if (error.response.data) {
+                    // Primero, si existe un mensaje para el campo "contenido", úsalo
+                    if (error.response.data.contenido && error.response.data.contenido.length > 0) {
+                        setErrorComentario(error.response.data.contenido[0]);
+                    } else if (error.response.data.detail) {
+                        setErrorComentario(error.response.data.detail);
+                    } else if (error.response.data.message) {
+                        setErrorComentario(error.response.data.message);
+                    } else {
+                        // En caso de 400 sin mensaje específico, mensaje por defecto
+                        setErrorComentario("Tu comentario tiene contenido prohibido, por lo que no puede ser publicado.");
+                    }
+                } else {
+                    setErrorComentario("Hubo un problema al enviar el comentario.");
+                }
+            } else {
+                setErrorComentario("Ha ocurrido un error inesperado.");
+            }
         }
-    };
+    };   
 
     const eliminarPublicacion = async () => {
         if (!token) return;
@@ -165,10 +190,10 @@ const PublicacionCard = ({ publicacion, recargarPublicaciones }) => {
                     placeholder="Escribe un comentario..."
                     value={nuevoComentario}
                     maxLength={maxCaracteres}
-                    onChange={(e) => setNuevoComentario(e.target.value)}
+                    onChange={(e) => { setNuevoComentario(e.target.value); setErrorComentario(""); }}
                     className="w-full p-2 mt-2 bg-white text-black placeholder-gray-500 border border-yellow-500 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
-    
+                    {errorComentario && <p className="text-red-600 mt-2">{errorComentario}</p>}                                 
                 <button
                     onClick={enviarComentario}
                     className={`mt-2 px-4 py-2 rounded-md font-bold transition ${

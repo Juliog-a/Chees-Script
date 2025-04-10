@@ -33,6 +33,7 @@ export default function Blog() {
         return regex.test(url);
     };
     const handlePublicar = async () => {
+        // Validaciones básicas del formulario
         if (!titulo || !contenido) {
             alert("Título y contenido son obligatorios.");
             return;
@@ -45,37 +46,49 @@ export default function Blog() {
             setErrorImagen("La URL debe ser una imagen válida (png, jpg, jpeg, gif, bmp, webp, svg).");
             return;
         }
+        
+        // Preparar el objeto de publicación
         const nuevaPublicacion = {
             titulo,
             contenido,
             url_imagen: imagen && imagen.length > 0 ? imagen : "",
         };
+        
         try {
+            // Envío al backend utilizando el token de autenticación
             const response = await API.post("/blog/", nuevaPublicacion, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setPublicaciones([response.data, ...publicaciones]); 
+            // Actualización de publicaciones y reseteo del formulario
+            setPublicaciones([response.data, ...publicaciones]);
             setMostrarFormulario(false);
             setTitulo("");
             setContenido("");
             setImagen("");
             setErrorImagen("");
-            setError("");
+            setError("");  // Limpia errores previos
         } catch (error) {
             console.error("Error al publicar:", error.response?.data || error);
             
+            // Muestra mensaje específico si se excede el límite (429)
             if (error.response?.status === 429) {
                 setError("Has superado el límite de comentarios permitidos (5 por minuto). Por favor, espera unos instantes antes de intentar nuevamente.");
             }
+            // Muestra error específico si hay problemas con el contenido
             else if (error.response?.data?.contenido) {
                 setError(error.response.data.contenido[0]);
-            } else if (error.response?.data?.url_imagen) {
+            } 
+            // Muestra error en la URL de imagen si aplica
+            else if (error.response?.data?.url_imagen) {
                 setErrorImagen(error.response.data.url_imagen[0]); 
-            } else {
+            } 
+            // Mensaje genérico en caso de otros errores
+            else {
                 setError("Hubo un problema al publicar. Inténtalo nuevamente.");
             }
         }
     };
+    
     
     return (
     <div className="w-screen min-h-screen flex flex-col bg-white text-black pt-32 px-4 overflow-x-hidden">
