@@ -157,8 +157,6 @@ class ComentarioPublicacionSerializer(serializers.ModelSerializer):
 
         return value
 
-
-
 class PublicacionSerializer(serializers.ModelSerializer):
     usuario_nombre = serializers.CharField(source="usuario.username", read_only=True)
     usuario = serializers.PrimaryKeyRelatedField(read_only=True)  # <--- ESENCIAL!
@@ -193,8 +191,6 @@ class PublicacionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("El contenido no puede tener más de 130 caracteres.")
         return bleach.clean(value, tags=[], strip=True)
 
-
-
     def validate_url_imagen(self, value):
         """ Valida URL segura y verifica que devuelva imagen """
         if value:
@@ -211,8 +207,6 @@ class PublicacionSerializer(serializers.ModelSerializer):
             except requests.RequestException:
                 raise serializers.ValidationError("Error al verificar la URL proporcionada.")
         return value
-
-
     
     def get_liked_by_user(self, obj):
         """Devuelve `True` si el usuario autenticado ha dado like, `False` en caso contrario."""
