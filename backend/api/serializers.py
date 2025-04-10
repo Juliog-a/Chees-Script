@@ -3,6 +3,7 @@ from .models import User, Desafio,UsuarioDesafio, Publicacion, Trofeo,Comentario
 import re
 import bleach
 from django.conf import settings
+import requests
 
 class DesafioSerializer(serializers.ModelSerializer):
     liked_by_user = serializers.SerializerMethodField()
@@ -92,7 +93,7 @@ class TrofeoSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     points = serializers.IntegerField(source='profile.points', read_only=True)
     profile_image = serializers.URLField(source='profile.profile_image', required=False)
-    is2fa_enabled = serializers.BooleanField(source="profile.is2fa_enabled", read_only=True)  # Agregar el campo
+    is2fa_enabled = serializers.BooleanField(source="profile.is2fa_enabled", read_only=True)
     is_staff = serializers.BooleanField(read_only=True)
     is_superuser = serializers.BooleanField(read_only=True)
 
@@ -100,9 +101,29 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'points', 'profile_image', 'is2fa_enabled', 'is_staff', 'is_superuser']
         
+
+
+    def validate_profile_image(self, value):
+        """ Valida URL segura y verifica que devuelva imagen """
+        if value:
+            if not re.match(r"^https?:\/\/[^\s]+?\.(png|jpg|jpeg|gif|bmp|webp|svg)$", value, re.IGNORECASE):
+                raise serializers.ValidationError("La URL debe terminar en una extensión válida de imagen.")
+
+            if "javascript:" in value.lower() or "data:" in value.lower():
+                raise serializers.ValidationError("La URL contiene esquemas inseguros.")
+
+            try:
+                response = requests.head(value, timeout=3)
+                if not response.headers.get("Content-Type", "").startswith("image/"):
+                    raise serializers.ValidationError("La URL no devuelve una imagen válida (Content-Type incorrecto).")
+            except requests.RequestException:
+                raise serializers.ValidationError("Error al verificar la URL proporcionada.")
+        return value
+
     def get_points(self, obj):
         """Obtiene los puntos desde el perfil del usuario."""
         return obj.profile.points if hasattr(obj, "profile") else 0
+    
 
 
 class ComentarioPublicacionSerializer(serializers.ModelSerializer):
@@ -172,15 +193,25 @@ class PublicacionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("El contenido no puede tener más de 130 caracteres.")
         return bleach.clean(value, tags=[], strip=True)
 
+
+
     def validate_url_imagen(self, value):
-        """ Valida que la URL sea segura y apunte a una imagen """
+        """ Valida URL segura y verifica que devuelva imagen """
         if value:
-            regex = r"^https?:\/\/[^\s]+?\.(png|jpg|jpeg|gif|bmp|webp|svg)$"
-            if not re.match(regex, value, re.IGNORECASE):
-                raise serializers.ValidationError("La URL debe ser una imagen válida.")
+            if not re.match(r"^https?:\/\/[^\s]+?\.(png|jpg|jpeg|gif|bmp|webp|svg)$", value, re.IGNORECASE):
+                raise serializers.ValidationError("La URL debe terminar en una extensión válida de imagen.")
+
             if "javascript:" in value.lower() or "data:" in value.lower():
-                raise serializers.ValidationError("La URL no puede contener esquemas inseguros.")
+                raise serializers.ValidationError("La URL contiene esquemas inseguros.")
+
+            try:
+                response = requests.head(value, timeout=3)
+                if not response.headers.get("Content-Type", "").startswith("image/"):
+                    raise serializers.ValidationError("La URL no devuelve una imagen válida (Content-Type incorrecto).")
+            except requests.RequestException:
+                raise serializers.ValidationError("Error al verificar la URL proporcionada.")
         return value
+
 
     
     def get_liked_by_user(self, obj):
