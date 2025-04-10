@@ -103,17 +103,19 @@ export default function FormularioContacto() {
       setFormData({ email: "", comentario: "", captcha: "" });
       generarCaptcha();
     } catch (err) {
-      if (err.response && err.response.status === 429) {
+      console.error("Error al enviar el formulario:", err);
+      if (err.response?.status === 429) {
         setError("Debes esperar unos minutos antes de enviar otro mensaje.");
+      } else if (err.response?.data?.mensaje && err.response.data.mensaje.length > 0) {
+        setError(err.response.data.mensaje[0]);
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
       } else {
-        setError("Hubo un error al enviar el mensaje.");
+        setError("Hubo un error al enviar el mensaje. Revisa el contenido e inténtalo de nuevo.");
       }
-    
-      console.error("Error al enviar el formulario:", err);
-    }
-    
+    }    
   };
 
   return (

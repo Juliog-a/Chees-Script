@@ -76,8 +76,17 @@ const FeedbackForm = () => {
             }
         } catch (err) {
             console.error("Error en la API:", err.response?.data || err);
-            setError("Error al enviar el feedback.");
-        }
+        
+            if (err.response?.data?.codigo && err.response.data.codigo.length > 0) {
+                setError(err.response.data.codigo[0]);
+            } else if (err.response?.data?.detail) {
+                setError(err.response.data.detail);
+            } else if (err.response?.data?.message) {
+                setError(err.response.data.message);
+            } else {
+                setError("Error al enviar el feedback. Verifica el contenido y vuelve a intentarlo.");
+            }
+        }        
     };
     
 
