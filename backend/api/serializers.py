@@ -34,7 +34,7 @@ class DesafioSerializer(serializers.ModelSerializer):
             return request.user in obj.likes.all()
         return False
     
-    def get_completado_por(self, obj):
+    def get_completado_por(self, obj): #Solo para la demo (para añadir cuantos usuarios han resuelto el desafio)
         from .models import UsuarioDesafio
         return UsuarioDesafio.objects.filter(desafio=obj).count()
 
