@@ -7,6 +7,8 @@ import requests
 
 class DesafioSerializer(serializers.ModelSerializer):
     liked_by_user = serializers.SerializerMethodField()
+    solucionado = serializers.SerializerMethodField()
+    completado_por = serializers.SerializerMethodField()
 
     # Listas de valores permitidos
     DIFICULTADES_PERMITIDAS = ["Principiante", "Intermedio", "Avanzado", "Experto"]
@@ -31,6 +33,10 @@ class DesafioSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return request.user in obj.likes.all()
         return False
+    
+    def get_completado_por(self, obj):
+        from .models import UsuarioDesafio  # asegúrate de importar si no lo tienes ya
+        return UsuarioDesafio.objects.filter(desafio=obj).count()
 
     # Validación para dificultad
     def validate_nivel_dificultad(self, value):
