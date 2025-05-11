@@ -35,7 +35,7 @@ class DesafioSerializer(serializers.ModelSerializer):
         return False
     
     def get_completado_por(self, obj):
-        from .models import UsuarioDesafio  # asegúrate de importar si no lo tienes ya
+        from .models import UsuarioDesafio
         return UsuarioDesafio.objects.filter(desafio=obj).count()
 
     # Validación para dificultad
