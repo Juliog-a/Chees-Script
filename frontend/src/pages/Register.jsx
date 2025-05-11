@@ -86,7 +86,7 @@ const Register = () => {
     };
 
     return (
-        <div className="w-screen min-h-screen flex flex-col bg-white text-black">
+        <div className="w-screen min-h-screen flex flex-col bg-white text-black overflow-y-auto pt-32">
             <div className="flex-1 flex items-center justify-center px-4">
                 <div className="w-full max-w-[400px] text-center bg-yellow-200 p-6 rounded-md shadow-md">
                     <h2 className="text-3xl font-bold mb-6">Registro</h2>
